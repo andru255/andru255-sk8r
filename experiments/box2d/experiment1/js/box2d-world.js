@@ -13,11 +13,12 @@ var halfCrateWidthInMeters = 0.1;
 var halfCrateHeightInMeters = 1.0;
 var halfCrateWidthInPixels = (halfCrateWidthInMeters * pixelsPerMeter);
 var halfCrateHeightInPixels = (halfCrateHeightInMeters * pixelsPerMeter);
+var unnamedBodies = new Array() ;
 var ctx;
+// Name alias
+var b2Vec2 = Box2D.Common.Math.b2Vec2, b2BodyDef = Box2D.Dynamics.b2BodyDef, b2Body = Box2D.Dynamics.b2Body, b2FixtureDef = Box2D.Dynamics.b2FixtureDef, b2Fixture = Box2D.Dynamics.b2Fixture, b2World = Box2D.Dynamics.b2World, b2MassData = Box2D.Collision.Shapes.b2MassData, b2PolygonShape = Box2D.Collision.Shapes.b2PolygonShape, b2CircleShape = Box2D.Collision.Shapes.b2CircleShape, b2DebugDraw = Box2D.Dynamics.b2DebugDraw;
 
 function init() {
-	// Name alias
-	var b2Vec2 = Box2D.Common.Math.b2Vec2, b2BodyDef = Box2D.Dynamics.b2BodyDef, b2Body = Box2D.Dynamics.b2Body, b2FixtureDef = Box2D.Dynamics.b2FixtureDef, b2Fixture = Box2D.Dynamics.b2Fixture, b2World = Box2D.Dynamics.b2World, b2MassData = Box2D.Collision.Shapes.b2MassData, b2PolygonShape = Box2D.Collision.Shapes.b2PolygonShape, b2CircleShape = Box2D.Collision.Shapes.b2CircleShape, b2DebugDraw = Box2D.Dynamics.b2DebugDraw;
 
 	world = new b2World(new b2Vec2(0, 10) // gravity
 	, true // allow sleep
@@ -50,6 +51,42 @@ function init() {
 	fixDef.shape.SetAsBox(groundHalfWidth, worldHeightInMeter / 2);
 	world.CreateBody(bodyDef).CreateFixture(fixDef);
 
+	ctx = document.getElementById("canvas").getContext("2d");
+
+	// setup debug draw
+	var debugDraw = new b2DebugDraw();
+	debugDraw.SetSprite(ctx);
+	debugDraw.SetDrawScale(pixelsPerMeter);
+	debugDraw.SetFillAlpha(0.6);
+	debugDraw.SetLineThickness(1.0);
+	debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit);
+	world.SetDebugDraw(debugDraw);
+	
+	initBodies();
+	
+	window.setInterval(update, 1000 / 30);
+};
+
+function reset() {
+	for (var n=0; n<unnamedBodies.length; n++) {
+		world.DestroyBody(unnamedBodies[n]) ;
+	}
+	unnamedBodies = new Array() ;
+	world.DestroyBody(trailcircleBody) ;
+	world.DestroyBody(crateBody) ;
+	
+	initBodies() ;
+}
+
+function initBodies() {
+
+	var fixDef = new b2FixtureDef;
+	fixDef.density = 1.0;
+	fixDef.friction = 0.5;
+	fixDef.restitution = 0.2;
+
+	var bodyDef = new b2BodyDef;
+
 	// create some objects
 	bodyDef.type = b2Body.b2_dynamicBody;
 	for ( var i = 0; i < 8; ++i) {
@@ -64,7 +101,9 @@ function init() {
 		}
 		bodyDef.position.x = Math.random() * (worldWidthInMeter - 3) + 1.5;
 		bodyDef.position.y = Math.random() * 3;
-		world.CreateBody(bodyDef).CreateFixture(fixDef);
+		var body  = world.CreateBody(bodyDef) ;
+		body.CreateFixture(fixDef);
+		unnamedBodies.push(body) ;
 	}
 	// 0.5 meter circle
 	var trailcircleRadiusInMeters = 0.2;
@@ -74,17 +113,6 @@ function init() {
 	fixDef.restitution = 0.6;
 	trailcircleBody = world.CreateBody(bodyDef);
 	trailcircleBody.CreateFixture(fixDef);
-
-	bodyDef.position.x = 5;
-	bodyDef.position.y = 0;
-	crateBody = world.CreateBody(bodyDef);
-	fixDef.shape = new b2PolygonShape;
-	fixDef.shape.SetAsBox(halfCrateWidthInMeters, halfCrateHeightInMeters);
-	fixDef.restitution = 0.2;
-	crateBody.CreateFixture(fixDef);
-
-	ctx = document.getElementById("canvas").getContext("2d");
-
 	trailcircle = new TrailCircle(ctx, {
 		radius : trailcircleRadiusInMeters * pixelsPerMeter,
 		position : {
@@ -98,17 +126,15 @@ function init() {
 		}
 	});
 
-	// setup debug draw
-	var debugDraw = new b2DebugDraw();
-	debugDraw.SetSprite(ctx);
-	debugDraw.SetDrawScale(pixelsPerMeter);
-	debugDraw.SetFillAlpha(0.6);
-	debugDraw.SetLineThickness(1.0);
-	debugDraw.SetFlags(b2DebugDraw.e_shapeBit | b2DebugDraw.e_jointBit);
-	world.SetDebugDraw(debugDraw);
-
-	window.setInterval(update, 1000 / 30);
-};
+	bodyDef.position.x = 5;
+	bodyDef.position.y = 0;
+	crateBody = world.CreateBody(bodyDef);
+	fixDef.shape = new b2PolygonShape;
+	fixDef.shape.SetAsBox(halfCrateWidthInMeters, halfCrateHeightInMeters);
+	fixDef.restitution = 0.2;
+	crateBody.CreateFixture(fixDef);
+	
+}
 
 function update() {
 	world.Step(1 / 30 // frame-rate
