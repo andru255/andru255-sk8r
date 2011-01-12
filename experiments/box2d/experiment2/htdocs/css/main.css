@@ -1,0 +1,17 @@
+@CHARSET "UTF-8";
+
+body {
+	background-color: #f0f0f0;
+}
+
+div.box2d-canvas-container {
+	border-style: solid;
+	border-width: 2px;
+	border-color: black;
+	background-color: white;
+}
+
+.size640x480 {
+	width: 640px;
+	height: 480px;
+}
