@@ -1,0 +1,18 @@
+@CHARSET "UTF-8";
+body {
+	background-color: #f0f0f0;
+}
+
+div.box2d-canvas-container {
+	background-image: url("../media/canvasgradient.png");
+	background-position: 0 0;
+	background-repeat: repeat-x;
+	border-style: dashed ;
+	border-width: 2px;
+	border-color: blue;
+}
+
+.size640x480 {
+	width: 640px;
+	height: 480px;
+}
