@@ -42,6 +42,12 @@ function World(ctx) {
 	this.ctx = ctx;
 }
 
+function bind(obj, fn) {
+	return function() {
+			fn.call(obj) ;
+	};
+}
+
 World.prototype = {
 	init : function() {
 		var fixDef = new Box2D.Dynamics.b2FixtureDef();
@@ -88,8 +94,8 @@ World.prototype = {
 		debugDraw.SetFlags(Box2D.Dynamics.b2DebugDraw.e_shapeBit
 				| Box2D.Dynamics.b2DebugDraw.e_jointBit);
 		this.world.SetDebugDraw(debugDraw);
-
-		window.setInterval(gameWorld.update, 1000 / 30);
+		var callback = bind(this, this.update) ;
+		window.setInterval(callback, 1000 / 30);
 	},
 	reset : function() {
 		// Destroy the existing joints
@@ -139,11 +145,11 @@ World.prototype = {
 		}
 	},
 	update : function() {
-		gameWorld.world.Step(1 / 30 // frame-rate
+		this.world.Step(1 / 30 // frame-rate
 		, 10 // velocity iterations
 		, 10 // position iterations
 		);
-		gameWorld.world.DrawDebugData();
-		gameWorld.world.ClearForces();
+		this.world.DrawDebugData();
+		this.world.ClearForces();
 	}
 };
