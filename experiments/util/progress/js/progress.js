@@ -1,4 +1,10 @@
 /*
+Package: progress
+
+Utility classes to track and draw progress (for loading.... messages).
+*/
+
+/*
 Class: ProgressMeter
 
 A class that keeps two counters. A counter of the number of tasks left to be done
@@ -72,7 +78,8 @@ ProgressMeter.prototype = {
 /*
 Class: ProgressBar
 
-Draws a progress bar on the given canvas. Register the 
+Draws a progress bar on the given canvas. Register an instance of this class on
+a progress meter and watch the blinken bars.
 
 Constructor:
 	ctx - The canvas 2D context to draw on.
