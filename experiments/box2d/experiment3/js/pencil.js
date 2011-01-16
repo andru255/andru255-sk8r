@@ -10,7 +10,8 @@ function World(options) {
   this.defaults = {
     pixelsPerMeter: 40,
     worldWidthInMeter: 16,
-    worldHeightInMeter: 12
+    worldHeightInMeter: 12,
+    groundHalfWidth: 0.5
   };
   for (property in options) {
     this.defaults[property] = options[property];
