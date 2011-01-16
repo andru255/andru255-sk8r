@@ -3,10 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <title>Box2DWeb</title>
-<style>
-@IMPORT url("css/main.css");
+<style type="text/css" media="screen">
+  canvas {
+    border: 1px solid black;
+    cursor: crosshair;
+  }
 </style>
-
 <script type="text/javascript" src="../lib/Box2dWeb-2.1a.2.js"></script>
 <script type="text/javascript" src="js/pencil.js"></script>
 <script type="text/javascript" src="js/experiment3.js"></script>
@@ -21,6 +23,6 @@ of the flash port of the
 <div class="box2d-canvas-container size640x480">
 <canvas id="canvas" width="640" height="480"></canvas>
 </div>
-<button onclick="reset();">Reset</button>
+<button onclick="drop();">Drop</button>
 </body>
 </html>
