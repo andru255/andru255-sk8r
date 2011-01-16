@@ -18,10 +18,10 @@ function World(options) {
   }
   this.world = new Box2D.Dynamics.b2World(
     new Box2D.Common.Math.b2Vec2(0, 10), true);
-  this.ctx = this.defaults.canvas.getContext("2d");
-  this.setUpGround();
-  this.setUpDebugDraw();
-  //window.setInterval(this.update.bind(this), 1000 / 30);
+    this.ctx = this.defaults.canvas.getContext("2d");
+    this.setUpGround();
+    this.setUpDebugDraw();
+    //window.setInterval(this.update.bind(this), 1000 / 30);
 }
 
 World.prototype = {
@@ -72,15 +72,14 @@ World.prototype = {
     this.world.ClearForces();
   },
 
-  drawLine: function(points) {
-    console.log(points);
+  createPolygon: function(points) {
     if (!points || points.length === 0) {
       return;
     }
     var bodyDef = new Box2D.Dynamics.b2BodyDef();
     bodyDef.position.Set(
-                      points[0].x / this.defaults.pixelsPerMeter,
-                      points[0].y / this.defaults.pixelsPerMeter);
+      points[0].x / this.defaults.pixelsPerMeter,
+    points[0].y / this.defaults.pixelsPerMeter);
     var fixDef = new Box2D.Dynamics.b2FixtureDef();
     fixDef.density = 1.0;
     fixDef.friction = 0.5;
@@ -125,6 +124,8 @@ World.prototype = {
 function Pencil (world) {
   this.world = world;
   this.canvas = world.canvas;
+  this.canvasPosition = this.getElementPosition(canvas);
+  console.log(this.canvasPosition);
   this.ctx = world.ctx; 
   this.ctx.strokeStyle = "rgb(255,0,0)";
   this.last = {};
@@ -140,23 +141,25 @@ Pencil.prototype = {
   mousedown: function(e) {
     this.isMouseDown = true;
     console.log(e);
-    this.last['x'] = e.clientX;
-    this.last['y'] = e.clientY;
+    this.last['x'] = e.clientX - this.canvasPosition.x;
+    this.last['y'] = e.clientY - this.canvasPosition.y;
     this.ctx.beginPath();
   },
 
   mouseup: function() {
     this.isMouseDown = false;
-    this.world.drawLine(this.points);
+    this.world.createPolygon(this.points);
     this.last = {};
     this.points = [];
     this.lastPush = new Date().getTime();
   },
 
   mousemove: function(e) {
-    if (this.isMouseDown && new Date().getTime() - this.lastPush > 500) {
-      this.draw({x: e.clientX, y: e.clientY});
-      this.points.push({x: e.clientX, y: e.clientY});
+    if (this.isMouseDown && new Date().getTime() - this.lastPush > 100) {
+      var mousePosition = {x: e.clientX - this.canvasPosition.x,
+                           y: e.clientY - this.canvasPosition.y};
+      this.draw(mousePosition);
+      this.points.push(mousePosition);
       this.lastPush = new Date().getTime();
     }
   },
@@ -166,5 +169,27 @@ Pencil.prototype = {
     this.ctx.lineTo(current.x, current.y);
     this.ctx.stroke();
     this.last = current;
+  },
+
+
+  //http://js-tut.aardon.de/js-tut/tutorial/position.html
+  getElementPosition: function (element) {
+    var elem=element, tagname="", x=0, y=0;
+
+    while((typeof(elem) == "object") && (typeof(elem.tagName) != "undefined")) {
+      y += elem.offsetTop;
+      x += elem.offsetLeft;
+      tagname = elem.tagName.toUpperCase();
+
+      if(tagname == "BODY")
+        elem=0;
+
+      if(typeof(elem) == "object") {
+        if(typeof(elem.offsetParent) == "object")
+          elem = elem.offsetParent;
+        }
+    }
+
+    return {x: x, y: y};
   }
 };
