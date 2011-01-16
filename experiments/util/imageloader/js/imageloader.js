@@ -43,7 +43,7 @@ function ImageLoader(progressMeter) {
 
 ImageLoader.prototype = {
 	/*
-	Function : createImage
+	Function: createImage
 	
 	Create an image object that is to be loaded by this loader.
 	
@@ -66,7 +66,7 @@ ImageLoader.prototype = {
 		return image ;
 	},
 	/*
-	Function : start
+	Function: start
 	
 	Start loading the images. No more images can be registered through <createImage>
 	*/
