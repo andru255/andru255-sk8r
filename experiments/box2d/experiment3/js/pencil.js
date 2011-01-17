@@ -26,10 +26,7 @@ function World(options) {
 
 World.prototype = {
   setUpGround: function() {
-    var fixDef = new Box2D.Dynamics.b2FixtureDef();
-    fixDef.density = 1.0;
-    fixDef.friction = 0.5;
-    fixDef.restitution = 0.2;
+    var fixDef = this.createFixture(1.0, 0.5, 0.2);
 
     var bodyDef = new Box2D.Dynamics.b2BodyDef();
     bodyDef.type = Box2D.Dynamics.b2Body.b2_staticBody;
@@ -40,7 +37,6 @@ World.prototype = {
     fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape();
     fixDef.shape.SetAsBox(this.defaults.worldWidthInMeter / 2, this.defaults.groundHalfWidth);
     this.world.CreateBody(bodyDef).CreateFixture(fixDef);
-
 
     // Left wall
     bodyDef.position.x = -this.defaults.groundHalfWidth;
@@ -72,25 +68,26 @@ World.prototype = {
     this.world.ClearForces();
   },
 
-  createPolygon: function(points) {
-    if (!points || points.length === 0) {
-      return;
-    }
+  createPolygon: function(line) {
     var bodyDef = new Box2D.Dynamics.b2BodyDef();
+    console.log(line);
     bodyDef.position.Set(
-      points[0].x / this.defaults.pixelsPerMeter,
-    points[0].y / this.defaults.pixelsPerMeter);
-    var fixDef = new Box2D.Dynamics.b2FixtureDef();
-    fixDef.density = 1.0;
-    fixDef.friction = 0.5;
-    fixDef.restitution = 0.2;
+     line.start.x / this.defaults.pixelsPerMeter, 
+     line.start.y / this.defaults.pixelsPerMeter);
+    var fixDef = this.createFixture(1.0, 0.5, 0.2);
     fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape();
-    var vertices = [];
-    for(var i = 0, length = points.length; i < length; i++) {
-      vertices.push(new Box2D.Common.Math.b2Vec2(
-        points[i].x / this.defaults.pixelsPerMeter, 
-        points[i].y / this.defaults.pixelsPerMeter));
-    }
+    console.log(this.defaults.pixelsPerMeter);
+    var vertices = [
+      new Box2D.Common.Math.b2Vec2(line.start.x / this.defaults.pixelsPerMeter, 
+                                   line.start.y / this.defaults.pixelsPerMeter),
+      new Box2D.Common.Math.b2Vec2(line.start.x/this.defaults.pixelsPerMeter, 
+                                   (line.start.y + 0.1) / this.defaults.pixelsPerMeter),
+      new Box2D.Common.Math.b2Vec2(line.end.x/this.defaults.pixelsPerMeter, 
+                                   line.end.y/this.defaults.pixelsPerMeter),
+      new Box2D.Common.Math.b2Vec2(line.end.x/this.defaults.pixelsPerMeter, 
+                                   (line.end.y + 0.1) / this.defaults.pixelsPerMeter)
+    ];
+    console.log(vertices);
     fixDef.shape.SetAsArray(vertices, vertices.length);
     console.log(fixDef);
     console.log(bodyDef);
@@ -118,6 +115,14 @@ World.prototype = {
       var body  = this.world.CreateBody(bodyDef) ;
       body.CreateFixture(fixDef);
     }
+  },
+
+  createFixture: function(density, friction, restitution) {
+    var fixDef = new Box2D.Dynamics.b2FixtureDef();
+    fixDef.density = density;
+    fixDef.friction = friction;
+    fixDef.restitution = restitution;
+    return fixDef;
   }
 };
 
@@ -128,8 +133,8 @@ function Pencil (world) {
   console.log(this.canvasPosition);
   this.ctx = world.ctx; 
   this.ctx.strokeStyle = "rgb(255,0,0)";
-  this.last = {};
-  this.points = [];
+  this.lines = [];
+  this.currentLine = {};
   this.lastPush = new Date().getTime();
   this.isMouseDown = false;
   canvas.onmousedown = this.mousedown.bind(this);
@@ -141,36 +146,47 @@ Pencil.prototype = {
   mousedown: function(e) {
     this.isMouseDown = true;
     console.log(e);
-    this.last['x'] = e.clientX - this.canvasPosition.x;
-    this.last['y'] = e.clientY - this.canvasPosition.y;
-    this.ctx.beginPath();
+    var mousePosition = {x: e.clientX - this.canvasPosition.x,
+                           y: e.clientY - this.canvasPosition.y};
+    console.log(mousePosition);
+    this.currentLine.start = mousePosition;
   },
 
-  mouseup: function() {
+  mouseup: function(e) {
     this.isMouseDown = false;
-    this.world.createPolygon(this.points);
-    this.last = {};
-    this.points = [];
+    this.lines.push(this.currentLine);
+    this.world.createPolygon(this.currentLine);
+    this.currentLine = {};
+    this.drawAllLines();
     this.lastPush = new Date().getTime();
   },
 
   mousemove: function(e) {
     if (this.isMouseDown && new Date().getTime() - this.lastPush > 100) {
+      this.ctx.clearRect(0,0, canvas.width, canvas.height);
       var mousePosition = {x: e.clientX - this.canvasPosition.x,
                            y: e.clientY - this.canvasPosition.y};
-      this.draw(mousePosition);
-      this.points.push(mousePosition);
+      this.currentLine.end = mousePosition;
+      this.draw(this.currentLine.start, this.currentLine.end);
+      this.drawAllLines();
       this.lastPush = new Date().getTime();
     }
   },
 
-  draw: function(current) {
-    this.ctx.moveTo(this.last.x, this.last.y);
-    this.ctx.lineTo(current.x, current.y);
-    this.ctx.stroke();
-    this.last = current;
+  drawAllLines: function() {
+    for (var i = 0; i < this.lines.length; i++) {
+      var line = this.lines[i];
+      this.draw(line.start, line.end);
+    }
   },
 
+  draw: function(start, end) {
+      this.ctx.beginPath();
+      this.ctx.moveTo(start.x, start.y);
+      this.ctx.lineTo(end.x, end.y);
+      this.ctx.stroke();
+      this.ctx.closePath();
+  },
 
   //http://js-tut.aardon.de/js-tut/tutorial/position.html
   getElementPosition: function (element) {
