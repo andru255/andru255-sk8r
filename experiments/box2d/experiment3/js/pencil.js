@@ -69,47 +69,44 @@ World.prototype = {
   },
 
   createPolygon: function(line) {
+    var start = this.screenToWorldCoordinates(line.start);
+    var end = this.screenToWorldCoordinates(line.end);
+
     var bodyDef = new Box2D.Dynamics.b2BodyDef();
-    console.log(line);
-    bodyDef.position.Set(
-     line.start.x / this.defaults.pixelsPerMeter, 
-     line.start.y / this.defaults.pixelsPerMeter);
+    bodyDef.position.Set(0.0, 0.0);
     var fixDef = this.createFixture(1.0, 0.5, 0.2);
     fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape();
-    console.log(this.defaults.pixelsPerMeter);
-    var vertices = [
-      new Box2D.Common.Math.b2Vec2(line.start.x / this.defaults.pixelsPerMeter, 
-                                   line.start.y / this.defaults.pixelsPerMeter),
-      new Box2D.Common.Math.b2Vec2(line.start.x/this.defaults.pixelsPerMeter, 
-                                   (line.start.y + 0.1) / this.defaults.pixelsPerMeter),
-      new Box2D.Common.Math.b2Vec2(line.end.x/this.defaults.pixelsPerMeter, 
-                                   line.end.y/this.defaults.pixelsPerMeter),
-      new Box2D.Common.Math.b2Vec2(line.end.x/this.defaults.pixelsPerMeter, 
-                                   (line.end.y + 0.1) / this.defaults.pixelsPerMeter)
-    ];
+    var k = (start.y - end.y) / (start.x - end.x);
+    console.log("k");
+    console.log(k);
+    var vertices = [];
+    if (k > 0) {
+      vertices = [
+        new Box2D.Common.Math.b2Vec2(start.x, start.y),
+        new Box2D.Common.Math.b2Vec2(end.x, end.y),
+        new Box2D.Common.Math.b2Vec2(end.x, (end.y + 0.01)),
+        new Box2D.Common.Math.b2Vec2(start.x, (start.y + 0.01))
+      ];
+    } else {
+      vertices = [
+        new Box2D.Common.Math.b2Vec2(start.x, start.y),
+        new Box2D.Common.Math.b2Vec2(end.x, end.y),
+        new Box2D.Common.Math.b2Vec2(end.x, (end.y - 0.01)),
+        new Box2D.Common.Math.b2Vec2(start.x, (start.y - 0.01))
+      ];
+    }
     console.log(vertices);
     fixDef.shape.SetAsArray(vertices, vertices.length);
-    console.log(fixDef);
-    console.log(bodyDef);
     this.world.CreateBody(bodyDef).CreateFixture(fixDef);
   },
 
   dropBalls: function() {
-    var fixDef = new Box2D.Dynamics.b2FixtureDef();
-    fixDef.density = 1.0;
-    fixDef.friction = 0.5;
-    fixDef.restitution = 0.2;
-
+    var fixDef = this.createFixture(1.0, 0.5, 0.2);
     var bodyDef = new Box2D.Dynamics.b2BodyDef();
     // create some objects
     bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
     for ( var i = 0; i < 8; ++i) {
-      if (Math.random() > 0.5) {
-        fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape;
-        fixDef.shape.SetAsBox(Math.random() + 0.1, Math.random() + 0.1);
-      } else {
-        fixDef.shape = new Box2D.Collision.Shapes.b2CircleShape(Math.random() + 0.1);
-      }
+      fixDef.shape = new Box2D.Collision.Shapes.b2CircleShape(Math.random() + 0.1);
       bodyDef.position.x = Math.random() * (this.defaults.worldWidthInMeter - 3) + 1.5;
       bodyDef.position.y = Math.random() * 3;
       var body  = this.world.CreateBody(bodyDef) ;
@@ -123,13 +120,22 @@ World.prototype = {
     fixDef.friction = friction;
     fixDef.restitution = restitution;
     return fixDef;
+  },
+
+  screenToWorldCoordinates: function(screenPosition) {
+    var worldPosition = {
+      x : Math.floor(screenPosition.x / this.defaults.pixelsPerMeter),
+      y : Math.floor(screenPosition.y / this.defaults.pixelsPerMeter)
+    };
+    return worldPosition;
   }
 };
 
 function Pencil (world) {
   this.world = world;
-  this.canvas = world.canvas;
-  this.canvasPosition = this.getElementPosition(canvas);
+  this.canvas = world.defaults.canvas;
+  this.canvasPosition = this.getElementPosition(this.canvas);
+  console.log("canvas position");
   console.log(this.canvasPosition);
   this.ctx = world.ctx; 
   this.ctx.strokeStyle = "rgb(255,0,0)";
@@ -137,9 +143,9 @@ function Pencil (world) {
   this.currentLine = {};
   this.lastPush = new Date().getTime();
   this.isMouseDown = false;
-  canvas.onmousedown = this.mousedown.bind(this);
-  canvas.onmouseup = this.mouseup.bind(this); 
-  canvas.onmousemove = this.mousemove.bind(this);
+  this.canvas.onmousedown = this.mousedown.bind(this);
+  this.canvas.onmouseup = this.mouseup.bind(this); 
+  this.canvas.onmousemove = this.mousemove.bind(this);
 }
 
 Pencil.prototype = {
@@ -148,12 +154,16 @@ Pencil.prototype = {
     console.log(e);
     var mousePosition = {x: e.clientX - this.canvasPosition.x,
                            y: e.clientY - this.canvasPosition.y};
+    console.log("mousedown, mouseposition");
     console.log(mousePosition);
     this.currentLine.start = mousePosition;
   },
 
   mouseup: function(e) {
     this.isMouseDown = false;
+    if (!this.currentLine.end) {
+      this.currentLine.end = this.currentLine.start;
+    }
     this.lines.push(this.currentLine);
     this.world.createPolygon(this.currentLine);
     this.currentLine = {};
@@ -163,7 +173,7 @@ Pencil.prototype = {
 
   mousemove: function(e) {
     if (this.isMouseDown && new Date().getTime() - this.lastPush > 100) {
-      this.ctx.clearRect(0,0, canvas.width, canvas.height);
+      this.ctx.clearRect(0,0, this.canvas.width, this.canvas.height);
       var mousePosition = {x: e.clientX - this.canvasPosition.x,
                            y: e.clientY - this.canvasPosition.y};
       this.currentLine.end = mousePosition;
