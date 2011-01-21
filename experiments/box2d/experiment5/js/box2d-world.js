@@ -46,8 +46,6 @@ function World(ctx) {
 	this.world = new Box2D.Dynamics.b2World(
 			new Box2D.Common.Math.b2Vec2(0, 10), true);
 	this.ctx = ctx;
-	this.backwheel;
-	this.frontwheel;
 	this.board;
 }
 
@@ -203,6 +201,7 @@ World.prototype = {
 	initBodies : function() {
 		var bodyDef = new Box2D.Dynamics.b2BodyDef();
 		var fixDef = new Box2D.Dynamics.b2FixtureDef();
+		Actors.clear() ;
 		
 		fixDef.density = 1.0;
 		fixDef.friction = 0.9;
@@ -213,17 +212,19 @@ World.prototype = {
 		bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
 		bodyDef.position.x = wheelRadius;
 		bodyDef.position.y = wheelRadius;
-		this.backwheel = this.world.CreateBody(bodyDef);
-		this.backwheel.CreateFixture(fixDef);
-		this.bodies.push(this.backwheel) ;
+		var backwheel = this.world.CreateBody(bodyDef);
+		backwheel.CreateFixture(fixDef);
+		this.bodies.push(backwheel) ;
+		Actors.addActor(new Wheel(this.ctx, backwheel, wheelRadius)) ;
 
 		// Front wheel
 		bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
 		bodyDef.position.x = boardLength-wheelRadius;
 		bodyDef.position.y = wheelRadius;
-		this.frontwheel = this.world.CreateBody(bodyDef);
-		this.frontwheel.CreateFixture(fixDef);
-		this.bodies.push(this.frontwheel) ;
+		var frontwheel = this.world.CreateBody(bodyDef);
+		frontwheel.CreateFixture(fixDef);
+		this.bodies.push(frontwheel) ;
+		Actors.addActor(new Wheel(this.ctx, frontwheel, wheelRadius)) ;
 		
 		// Deck
 		fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape();
@@ -231,64 +232,38 @@ World.prototype = {
 		bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
 		bodyDef.position.x = boardLength / 2;
 		bodyDef.position.y = boardThickness / 2;
-		this.board = this.world.CreateBody(bodyDef);
-		this.board.CreateFixture(fixDef);
+		var board = this.world.CreateBody(bodyDef);
+		board.CreateFixture(fixDef);
 		this.bodies.push(this.board) ;
+		var boardRenderer = new Board(this.ctx, board, boardLength, boardThickness) ;
+		Actors.addActor(new Rotated(this.ctx, board, boardRenderer)) ;
 
 		// Trucks		
 		var b2JointDef = new Box2D.Dynamics.Joints.b2RevoluteJointDef();
-		b2JointDef.bodyA = this.backwheel;
-		b2JointDef.bodyB = this.board;
+		b2JointDef.bodyA = backwheel;
+		b2JointDef.bodyB = board;
 		b2JointDef.localAnchorA = new Box2D.Common.Math.b2Vec2(0, 0);
 		b2JointDef.localAnchorB = new Box2D.Common.Math.b2Vec2(-boardLength/2 + truckOffset, wheelRadius);
 		var joint = this.world.CreateJoint(b2JointDef);
 		this.joints.push(joint);
 		
-		b2JointDef.bodyA = this.frontwheel;
-		b2JointDef.bodyB = this.board;
+		b2JointDef.bodyA = frontwheel;
+		b2JointDef.bodyB = board;
 		b2JointDef.localAnchorA = new Box2D.Common.Math.b2Vec2(0, 0);
 		b2JointDef.localAnchorB = new Box2D.Common.Math.b2Vec2(boardLength/2 - truckOffset, wheelRadius);
 		joint = this.world.CreateJoint(b2JointDef);
 		this.joints.push(joint);
 		
-		this.board.SetPosition(new Box2D.Common.Math.b2Vec2(0.8, 1.5));
-	},
-	drawBoard : function() {
-		this.ctx.fillStyle = "#ff0000";
-		var worldPosition = this.frontwheel.GetPosition() ;
-		var x = Math.round(worldPosition.x * pixelsPerMeter) ;
-		var y = Math.round(worldPosition.y * pixelsPerMeter) ;
-		this.ctx.beginPath();
-		this.ctx.arc(x, y, wheelRadiusInPixels, 0, Math.PI * 2, false);
-		this.ctx.closePath();
-		this.ctx.fill();
-		
-		worldPosition = this.backwheel.GetPosition() ;
-		x = Math.round(worldPosition.x * pixelsPerMeter) ;
-		y = Math.round(worldPosition.y * pixelsPerMeter) ;
-		this.ctx.beginPath();
-		this.ctx.arc(x, y, wheelRadiusInPixels, 0, Math.PI * 2, false);
-		this.ctx.closePath();
-		this.ctx.fill();
-		
-		worldPosition = this.board.GetPosition() ;
-		x = Math.round(worldPosition.x * pixelsPerMeter) ;
-		y = Math.round(worldPosition.y * pixelsPerMeter) ;
-		this.ctx.fillStyle = "#0000ff";
-		this.ctx.fillRect(
-			x-halfBoardLengthInPixels,
-			y-halfBoardThicknessInPixels,
-			halfBoardLengthInPixels*2,
-			halfBoardThicknessInPixels*2);
+		board.SetPosition(new Box2D.Common.Math.b2Vec2(0.8, 1.5));
 	},
 	update : function() {
 		this.world.Step(1 / 30 // frame-rate
 		, 10 // velocity iterations
 		, 10 // position iterations
 		);
-		this.world.DrawDebugData();
-		//this.ctx.clearRect(0, 0, 640, 480);
-		//this.drawBoard();
+		//this.world.DrawDebugData();
+		this.ctx.clearRect(0, 0, 640, 480);
+		Actors.step(0) ;
 		this.world.ClearForces();
 	}
 };
