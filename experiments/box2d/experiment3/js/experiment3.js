@@ -5,7 +5,7 @@ window.onload = function() {
   var pencil = new Pencil(world);
 };
 
-function drop() {
+function play() {
   window.setInterval(world.update.bind(world), 1000 / 30);
-  world.dropBalls();
+//  world.dropBalls();
 }
