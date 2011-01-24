@@ -76,14 +76,11 @@ World.prototype = {
     bodyDef.position.Set(0.0, 0.0);
     var fixDef = this.createFixture(1.0, 0.5, 0.2);
     fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape();
-    var k = (start.y - end.y) / (start.x - end.x);
-    console.log("k");
-    console.log(k);
     var vertices = [
         new Box2D.Common.Math.b2Vec2(start.x, start.y),
         new Box2D.Common.Math.b2Vec2(end.x, end.y)
     ];
-    if (k > 0) {
+    if (MathUtil.slope(start, end) > 0) {
       vertices.push(
         new Box2D.Common.Math.b2Vec2(end.x, (end.y + 0.01)),
         new Box2D.Common.Math.b2Vec2(start.x, (start.y + 0.01)));
