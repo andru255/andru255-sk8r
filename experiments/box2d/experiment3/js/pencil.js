@@ -11,17 +11,21 @@ function World(options) {
     pixelsPerMeter: 40,
     worldWidthInMeter: 16,
     worldHeightInMeter: 12,
-    groundHalfWidth: 0.5
+    groundHalfWidth: 0.5,
+    wheelRadius: 0.05,
+    boardThickness: 0.02,
+    boardLength: 0.82,
+    truckOffset: 0.18
   };
   for (property in options) {
     this.settings[property] = options[property];
   }
   this.world = new Box2D.Dynamics.b2World(
     new Box2D.Common.Math.b2Vec2(0, 10), true);
-    this.ctx = this.settings.canvas.getContext("2d");
-    this.setUpGround();
-    this.setUpDebugDraw();
-    //window.setInterval(this.update.bind(this), 1000 / 30);
+  this.ctx = this.settings.canvas.getContext("2d");
+  this.setUpGround();
+  this.setUpBoard();
+  //this.setUpDebugDraw();
 }
 
 World.prototype = {
@@ -52,6 +56,61 @@ World.prototype = {
     this.world.CreateBody(bodyDef).CreateFixture(fixDef);
   },
 
+  setUpBoard: function() {
+		var bodyDef = new Box2D.Dynamics.b2BodyDef();
+		var fixDef = this.createFixture(1.0, 0.9, 0.1); 
+		fixDef.shape = new Box2D.Collision.Shapes.b2CircleShape(this.settings.wheelRadius);
+		Actors.clear() ;
+
+		// Back wheel
+		bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
+		bodyDef.position.x = this.settings.wheelRadius;
+		bodyDef.position.y = this.settings.wheelRadius;
+		var backwheel = this.world.CreateBody(bodyDef);
+		backwheel.CreateFixture(fixDef);
+		//this.bodies.push(backwheel) ;
+		Actors.addActor(new Wheel(this.ctx, backwheel, this.settings.wheelRadius)) ;
+
+		// Front wheel
+		bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
+		bodyDef.position.x = this.settings.boardLength-this.settings.wheelRadius;
+		bodyDef.position.y = this.settings.wheelRadius;
+		var frontwheel = this.world.CreateBody(bodyDef);
+		frontwheel.CreateFixture(fixDef);
+		//this.bodies.push(frontwheel) ;
+		Actors.addActor(new Wheel(this.ctx, frontwheel, this.settings.wheelRadius)) ;
+		
+		// Deck
+		fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape();
+		fixDef.shape.SetAsBox( this.settings.boardLength / 2, this.settings.boardThickness / 2);
+		bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
+		bodyDef.position.x = this.settings.boardLength / 2;
+		bodyDef.position.y = this.settings.boardThickness / 2;
+		var board = this.world.CreateBody(bodyDef);
+		board.CreateFixture(fixDef);
+		//this.bodies.push(this.board) ;
+		var boardRenderer = new Board(this.ctx, board, this.settings.boardLength, this.settings.boardThickness) ;
+		Actors.addActor(new Rotated(this.ctx, board, boardRenderer)) ;
+
+		// Trucks		
+		var b2JointDef = new Box2D.Dynamics.Joints.b2RevoluteJointDef();
+		b2JointDef.bodyA = backwheel;
+		b2JointDef.bodyB = board;
+		b2JointDef.localAnchorA = new Box2D.Common.Math.b2Vec2(0, 0);
+		b2JointDef.localAnchorB = new Box2D.Common.Math.b2Vec2(-this.settings.boardLength/2 + this.settings.truckOffset, this.settings.wheelRadius);
+		var joint = this.world.CreateJoint(b2JointDef);
+		//this.joints.push(joint);
+		
+		b2JointDef.bodyA = frontwheel;
+		b2JointDef.bodyB = board;
+		b2JointDef.localAnchorA = new Box2D.Common.Math.b2Vec2(0, 0);
+		b2JointDef.localAnchorB = new Box2D.Common.Math.b2Vec2(this.settings.boardLength/2 - this.settings.truckOffset, this.settings.wheelRadius);
+		joint = this.world.CreateJoint(b2JointDef);
+		//this.joints.push(joint);
+		
+		board.SetPosition(new Box2D.Common.Math.b2Vec2(0.8, 1.5));
+  },
+
   setUpDebugDraw: function() {
     var debugDraw = new Box2D.Dynamics.b2DebugDraw();
     debugDraw.SetSprite(this.ctx);
@@ -64,7 +123,8 @@ World.prototype = {
 
   update : function() {
     this.world.Step(1 / 30, 10, 10);
-    this.world.DrawDebugData();
+    //this.world.DrawDebugData();
+    Actors.step(0);
     this.world.ClearForces();
   },
 
