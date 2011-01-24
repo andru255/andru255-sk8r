@@ -79,21 +79,18 @@ World.prototype = {
     var k = (start.y - end.y) / (start.x - end.x);
     console.log("k");
     console.log(k);
-    var vertices = [];
+    var vertices = [
+        new Box2D.Common.Math.b2Vec2(start.x, start.y),
+        new Box2D.Common.Math.b2Vec2(end.x, end.y)
+    ];
     if (k > 0) {
-      vertices = [
-        new Box2D.Common.Math.b2Vec2(start.x, start.y),
-        new Box2D.Common.Math.b2Vec2(end.x, end.y),
+      vertices.push(
         new Box2D.Common.Math.b2Vec2(end.x, (end.y + 0.01)),
-        new Box2D.Common.Math.b2Vec2(start.x, (start.y + 0.01))
-      ];
+        new Box2D.Common.Math.b2Vec2(start.x, (start.y + 0.01)));
     } else {
-      vertices = [
-        new Box2D.Common.Math.b2Vec2(start.x, start.y),
-        new Box2D.Common.Math.b2Vec2(end.x, end.y),
+      vertices.push(
         new Box2D.Common.Math.b2Vec2(end.x, (end.y - 0.01)),
-        new Box2D.Common.Math.b2Vec2(start.x, (start.y - 0.01))
-      ];
+        new Box2D.Common.Math.b2Vec2(start.x, (start.y - 0.01)));
     }
     console.log(vertices);
     fixDef.shape.SetAsArray(vertices, vertices.length);
