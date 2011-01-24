@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Box2DWeb</title>
+<style>
+body {
+	background-color: #f0f0f0;
+}
+
+div.box2d-canvas-container {
+	background-repeat: repeat-x;
+	background-position: left top;
+	background-image: url("background-image.png");
+	border-style: solid;
+	border-width: 2px;
+	border-color: black;
+	background-color: white;
+}
+
+.size640x480 {
+	width: 640px;
+	height: 480px;
+}
+</style>
+
+<script type="text/javascript" src="../lib/Box2dWeb-2.1a.2.js"></script>
+<script type="text/javascript" src="js/actor.js"></script>
+<script type="text/javascript" src="js/box2d-world.js"></script>
+</head>
+<body>
+<h1>Box2DWeb</h1>
+<nav>
+	<a href="js/box2d-world.js">box2d-world.js</a>
+</nav>
+<p>
+Using the
+<a href="http://code.google.com/p/box2dweb/">JavaScript port</a>
+of the flash port of the
+<a href="http://box2d.org/">Box2D library</a>
+.</p>
+<div class="box2d-canvas-container size640x480">
+<canvas id="canvas" width="640" height="480"></canvas>
+</div>
+<button onclick="reset();">Reset</button>
+</body>
+</html>
