@@ -7,18 +7,18 @@ Function.prototype.bind = function(object){
 }; 
 
 function World(options) {
-  this.defaults = {
+  this.settings = {
     pixelsPerMeter: 40,
     worldWidthInMeter: 16,
     worldHeightInMeter: 12,
     groundHalfWidth: 0.5
   };
   for (property in options) {
-    this.defaults[property] = options[property];
+    this.settings[property] = options[property];
   }
   this.world = new Box2D.Dynamics.b2World(
     new Box2D.Common.Math.b2Vec2(0, 10), true);
-    this.ctx = this.defaults.canvas.getContext("2d");
+    this.ctx = this.settings.canvas.getContext("2d");
     this.setUpGround();
     this.setUpDebugDraw();
     //window.setInterval(this.update.bind(this), 1000 / 30);
@@ -32,30 +32,30 @@ World.prototype = {
     bodyDef.type = Box2D.Dynamics.b2Body.b2_staticBody;
 
     // create ground
-    bodyDef.position.x = this.defaults.worldWidthInMeter / 2;
-    bodyDef.position.y = this.defaults.worldHeightInMeter + this.defaults.groundHalfWidth;
+    bodyDef.position.x = this.settings.worldWidthInMeter / 2;
+    bodyDef.position.y = this.settings.worldHeightInMeter + this.settings.groundHalfWidth;
     fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape();
-    fixDef.shape.SetAsBox(this.defaults.worldWidthInMeter / 2, this.defaults.groundHalfWidth);
+    fixDef.shape.SetAsBox(this.settings.worldWidthInMeter / 2, this.settings.groundHalfWidth);
     this.world.CreateBody(bodyDef).CreateFixture(fixDef);
 
     // Left wall
-    bodyDef.position.x = -this.defaults.groundHalfWidth;
-    bodyDef.position.y = this.defaults.worldHeightInMeter / 2;
+    bodyDef.position.x = -this.settings.groundHalfWidth;
+    bodyDef.position.y = this.settings.worldHeightInMeter / 2;
     fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape();
-    fixDef.shape.SetAsBox(this.defaults.groundHalfWidth, this.defaults.worldHeightInMeter / 2);
+    fixDef.shape.SetAsBox(this.settings.groundHalfWidth, this.settings.worldHeightInMeter / 2);
     this.world.CreateBody(bodyDef).CreateFixture(fixDef);
     // Right wall
-    bodyDef.position.x = this.defaults.worldWidthInMeter + this.defaults.groundHalfWidth; // center
-    bodyDef.position.y = this.defaults.worldHeightInMeter / 2; // bottom
+    bodyDef.position.x = this.settings.worldWidthInMeter + this.settings.groundHalfWidth; // center
+    bodyDef.position.y = this.settings.worldHeightInMeter / 2; // bottom
     fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape();
-    fixDef.shape.SetAsBox(this.defaults.groundHalfWidth, this.defaults.worldHeightInMeter / 2);
+    fixDef.shape.SetAsBox(this.settings.groundHalfWidth, this.settings.worldHeightInMeter / 2);
     this.world.CreateBody(bodyDef).CreateFixture(fixDef);
   },
 
   setUpDebugDraw: function() {
     var debugDraw = new Box2D.Dynamics.b2DebugDraw();
     debugDraw.SetSprite(this.ctx);
-    debugDraw.SetDrawScale(this.defaults.pixelsPerMeter);
+    debugDraw.SetDrawScale(this.settings.pixelsPerMeter);
     debugDraw.SetFillAlpha(0.9);
     debugDraw.SetLineThickness(1.0);
     debugDraw.SetFlags(Box2D.Dynamics.b2DebugDraw.e_shapeBit | Box2D.Dynamics.b2DebugDraw.e_jointBit);
@@ -101,7 +101,7 @@ World.prototype = {
     bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
     for ( var i = 0; i < 8; ++i) {
       fixDef.shape = new Box2D.Collision.Shapes.b2CircleShape(Math.random() + 0.1);
-      bodyDef.position.x = Math.random() * (this.defaults.worldWidthInMeter - 3) + 1.5;
+      bodyDef.position.x = Math.random() * (this.settings.worldWidthInMeter - 3) + 1.5;
       bodyDef.position.y = Math.random() * 3;
       var body  = this.world.CreateBody(bodyDef) ;
       body.CreateFixture(fixDef);
@@ -118,8 +118,8 @@ World.prototype = {
 
   screenToWorldCoordinates: function(screenPosition) {
     var worldPosition = {
-      x : Math.floor(screenPosition.x / this.defaults.pixelsPerMeter),
-      y : Math.floor(screenPosition.y / this.defaults.pixelsPerMeter)
+      x : Math.floor(screenPosition.x / this.settings.pixelsPerMeter),
+      y : Math.floor(screenPosition.y / this.settings.pixelsPerMeter)
     };
     return worldPosition;
   }
@@ -127,7 +127,7 @@ World.prototype = {
 
 function Pencil (world) {
   this.world = world;
-  this.canvas = world.defaults.canvas;
+  this.canvas = world.settings.canvas;
   this.canvasPosition = this.getElementPosition(this.canvas);
   console.log("canvas position");
   console.log(this.canvasPosition);
