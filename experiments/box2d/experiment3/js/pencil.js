@@ -22,6 +22,7 @@ function World(options) {
   }
   this.world = new Box2D.Dynamics.b2World(
     new Box2D.Common.Math.b2Vec2(0, 10), true);
+  this.board;
   this.ctx = this.settings.canvas.getContext("2d");
   this.setUpGround();
   this.setUpBoard();
@@ -86,29 +87,29 @@ World.prototype = {
 		bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
 		bodyDef.position.x = this.settings.boardLength / 2;
 		bodyDef.position.y = this.settings.boardThickness / 2;
-		var board = this.world.CreateBody(bodyDef);
-		board.CreateFixture(fixDef);
+		this.board = this.world.CreateBody(bodyDef);
+		this.board.CreateFixture(fixDef);
 		//this.bodies.push(this.board) ;
-		var boardRenderer = new Board(this.ctx, board, this.settings.boardLength, this.settings.boardThickness) ;
-		Actors.addActor(new Rotated(this.ctx, board, boardRenderer)) ;
+		var boardRenderer = new Board(this.ctx, this.board, this.settings.boardLength, this.settings.boardThickness) ;
+		Actors.addActor(new Rotated(this.ctx, this.board, boardRenderer)) ;
 
 		// Trucks		
 		var b2JointDef = new Box2D.Dynamics.Joints.b2RevoluteJointDef();
 		b2JointDef.bodyA = backwheel;
-		b2JointDef.bodyB = board;
+		b2JointDef.bodyB = this.board;
 		b2JointDef.localAnchorA = new Box2D.Common.Math.b2Vec2(0, 0);
 		b2JointDef.localAnchorB = new Box2D.Common.Math.b2Vec2(-this.settings.boardLength/2 + this.settings.truckOffset, this.settings.wheelRadius);
 		var joint = this.world.CreateJoint(b2JointDef);
 		//this.joints.push(joint);
 		
 		b2JointDef.bodyA = frontwheel;
-		b2JointDef.bodyB = board;
+		b2JointDef.bodyB = this.board;
 		b2JointDef.localAnchorA = new Box2D.Common.Math.b2Vec2(0, 0);
 		b2JointDef.localAnchorB = new Box2D.Common.Math.b2Vec2(this.settings.boardLength/2 - this.settings.truckOffset, this.settings.wheelRadius);
 		joint = this.world.CreateJoint(b2JointDef);
 		//this.joints.push(joint);
 		
-		board.SetPosition(new Box2D.Common.Math.b2Vec2(0.8, 1.5));
+		this.board.SetPosition(new Box2D.Common.Math.b2Vec2(0.8, 1.5));
   },
 
   setUpDebugDraw: function() {
@@ -138,9 +139,22 @@ World.prototype = {
     this.world.ClearForces();
   },
 
+  ollie: function (x, y) {
+    var localCenter = this.board.GetLocalCenter().Copy();
+    //find the back of the deck
+    localCenter.x -= this.settings.boardLength/2.0;
+    this.board.ApplyImpulse(
+      new Box2D.Common.Math.b2Vec2(x, y),
+      localCenter);
+    //gently push down the front leg
+    localCenter.x += this.settings.boardLength/2.0;
+    this.board.ApplyImpulse(
+      new Box2D.Common.Math.b2Vec2(x, -y/2.0),
+      localCenter);
+  },
+
   createPolygon: function(line) {
     var start = MathUtil.screenToWorld(line.start);
-    console.log(start);
     var end = MathUtil.screenToWorld(line.end);
 
     var bodyDef = new Box2D.Dynamics.b2BodyDef();
@@ -149,18 +163,10 @@ World.prototype = {
     fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape();
     var vertices = [
         new Box2D.Common.Math.b2Vec2(start.x, start.y),
-        new Box2D.Common.Math.b2Vec2(end.x, end.y)
-    ];
-    if (MathUtil.slope(start, end) > 0) {
-      vertices.push(
+        new Box2D.Common.Math.b2Vec2(end.x, end.y),
         new Box2D.Common.Math.b2Vec2(end.x, (end.y + 0.01)),
-        new Box2D.Common.Math.b2Vec2(start.x, (start.y + 0.01)));
-    } else {
-      vertices.push(
-        new Box2D.Common.Math.b2Vec2(end.x, (end.y - 0.01)),
-        new Box2D.Common.Math.b2Vec2(start.x, (start.y - 0.01)));
-    }
-    console.log(vertices);
+        new Box2D.Common.Math.b2Vec2(start.x, (start.y + 0.01))
+    ];
     fixDef.shape.SetAsArray(vertices, vertices.length);
     this.world.CreateBody(bodyDef).CreateFixture(fixDef);
   },
@@ -185,7 +191,7 @@ World.prototype = {
     fixDef.friction = friction;
     fixDef.restitution = restitution;
     return fixDef;
-  },
+  }
 
 };
 
@@ -206,11 +212,8 @@ function Pencil (world) {
 Pencil.prototype = {
   mousedown: function(e) {
     this.isMouseDown = true;
-    console.log(e);
     var mousePosition = {x: e.clientX - this.canvasPosition.x,
                            y: e.clientY - this.canvasPosition.y};
-    console.log("mousedown, mouseposition");
-    console.log(mousePosition);
     this.currentLine.start = mousePosition;
   },
 
