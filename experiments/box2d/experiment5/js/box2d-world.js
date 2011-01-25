@@ -30,15 +30,6 @@ function reset() {
 var pixelsPerMeter = 40;
 var worldWidthInMeter = 16; // 640/pixelsPerMeter ;
 var worldHeightInMeter = 12; // 480/pixelsPerMeter ;
-// According to http://defekt.se/2010/04/den-standardiserade-skateboarden/
-var wheelRadius = 0.05;
-var boardThickness = 0.02 ;
-var boardLength = 0.82 ;
-var truckOffset = 0.18 ;
-
-var wheelRadiusInPixels = wheelRadius * pixelsPerMeter ;
-var halfBoardThicknessInPixels = Math.max(1,Math.round(boardThickness/2 * pixelsPerMeter)) ;
-var halfBoardLengthInPixels = Math.max(1,Math.round(boardLength/2 * pixelsPerMeter)) ;
 
 function World(ctx) {
 	this.bodies = new Array();
@@ -46,7 +37,6 @@ function World(ctx) {
 	this.world = new Box2D.Dynamics.b2World(
 			new Box2D.Common.Math.b2Vec2(0, 10), true);
 	this.ctx = ctx;
-	this.board;
 }
 
 function bind(obj, fn) {
@@ -79,12 +69,14 @@ World.prototype = {
 		for ( var n = 0; n < this.joints.length; n++) {
 			this.world.DestroyJoint(this.joints[n]);
 		}
+		this.joints = new Array() ;
 		// Destroy the existing bodies
 		for ( var n = 0; n < this.bodies.length; n++) {
 			this.world.DestroyBody(this.bodies[n]);
 		}
 		this.bodies = new Array();
-
+		
+		Actors.clear() ;
 		this.initBodies();
 	},
 	initRamp : function() {
@@ -199,70 +191,18 @@ World.prototype = {
 		this.world.CreateBody(bodyDef).CreateFixture(fixDef);
 	},
 	initBodies : function() {
-		var bodyDef = new Box2D.Dynamics.b2BodyDef();
-		var fixDef = new Box2D.Dynamics.b2FixtureDef();
 		Actors.clear() ;
-		
-		fixDef.density = 1.0;
-		fixDef.friction = 0.9;
-		fixDef.restitution = 0.1;
-		fixDef.shape = new Box2D.Collision.Shapes.b2CircleShape(wheelRadius);
-
-		// Back wheel
-		bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
-		bodyDef.position.x = wheelRadius;
-		bodyDef.position.y = wheelRadius;
-		var backwheel = this.world.CreateBody(bodyDef);
-		backwheel.CreateFixture(fixDef);
-		this.bodies.push(backwheel) ;
-		Actors.addActor(new Wheel(this.ctx, backwheel, wheelRadius)) ;
-
-		// Front wheel
-		bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
-		bodyDef.position.x = boardLength-wheelRadius;
-		bodyDef.position.y = wheelRadius;
-		var frontwheel = this.world.CreateBody(bodyDef);
-		frontwheel.CreateFixture(fixDef);
-		this.bodies.push(frontwheel) ;
-		Actors.addActor(new Wheel(this.ctx, frontwheel, wheelRadius)) ;
-		
-		// Deck
-		fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape();
-		fixDef.shape.SetAsBox(boardLength / 2, boardThickness / 2);
-		bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
-		bodyDef.position.x = boardLength / 2;
-		bodyDef.position.y = boardThickness / 2;
-		var board = this.world.CreateBody(bodyDef);
-		board.CreateFixture(fixDef);
-		this.bodies.push(this.board) ;
-		var boardRenderer = new Board(this.ctx, board, boardLength, boardThickness) ;
-		Actors.addActor(new Rotated(this.ctx, board, boardRenderer)) ;
-
-		// Trucks		
-		var b2JointDef = new Box2D.Dynamics.Joints.b2RevoluteJointDef();
-		b2JointDef.bodyA = backwheel;
-		b2JointDef.bodyB = board;
-		b2JointDef.localAnchorA = new Box2D.Common.Math.b2Vec2(0, 0);
-		b2JointDef.localAnchorB = new Box2D.Common.Math.b2Vec2(-boardLength/2 + truckOffset, wheelRadius);
-		var joint = this.world.CreateJoint(b2JointDef);
-		this.joints.push(joint);
-		
-		b2JointDef.bodyA = frontwheel;
-		b2JointDef.bodyB = board;
-		b2JointDef.localAnchorA = new Box2D.Common.Math.b2Vec2(0, 0);
-		b2JointDef.localAnchorB = new Box2D.Common.Math.b2Vec2(boardLength/2 - truckOffset, wheelRadius);
-		joint = this.world.CreateJoint(b2JointDef);
-		this.joints.push(joint);
-		
-		board.SetPosition(new Box2D.Common.Math.b2Vec2(0.8, 1.5));
+		var sk8board = new Sk8board(this.world, this.ctx) ;
+		sk8board.init(this.bodies, this.joints) ;
+		createRobot(this.bodies, this.joints, this.ctx, this.world, {scale: 0.4});
 	},
 	update : function() {
 		this.world.Step(1 / 30 // frame-rate
 		, 10 // velocity iterations
 		, 10 // position iterations
 		);
-		//this.world.DrawDebugData();
-		this.ctx.clearRect(0, 0, 640, 480);
+		this.world.DrawDebugData();
+		//this.ctx.clearRect(0, 0, 640, 480);
 		Actors.step(0) ;
 		this.world.ClearForces();
 	}
