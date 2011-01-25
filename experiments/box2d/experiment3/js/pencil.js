@@ -25,7 +25,7 @@ function World(options) {
   this.ctx = this.settings.canvas.getContext("2d");
   this.setUpGround();
   this.setUpBoard();
-  //this.setUpDebugDraw();
+  this.setUpDebugDraw();
 }
 
 World.prototype = {
@@ -121,16 +121,27 @@ World.prototype = {
     this.world.SetDebugDraw(debugDraw);
   },
 
+  setDebug: function (debug) {
+    if (debug) {
+      this.debug = true;
+    } else {
+      this.debug = false;
+    }
+  },
+
   update : function() {
     this.world.Step(1 / 30, 10, 10);
-    //this.world.DrawDebugData();
+    if (this.debug) {
+      this.world.DrawDebugData();
+    }
     Actors.step(0);
     this.world.ClearForces();
   },
 
   createPolygon: function(line) {
-    var start = this.screenToWorldCoordinates(line.start);
-    var end = this.screenToWorldCoordinates(line.end);
+    var start = MathUtil.screenToWorld(line.start);
+    console.log(start);
+    var end = MathUtil.screenToWorld(line.end);
 
     var bodyDef = new Box2D.Dynamics.b2BodyDef();
     bodyDef.position.Set(0.0, 0.0);
@@ -176,26 +187,16 @@ World.prototype = {
     return fixDef;
   },
 
-  screenToWorldCoordinates: function(screenPosition) {
-    var worldPosition = {
-      x : Math.floor(screenPosition.x / this.settings.pixelsPerMeter),
-      y : Math.floor(screenPosition.y / this.settings.pixelsPerMeter)
-    };
-    return worldPosition;
-  }
 };
 
 function Pencil (world) {
   this.world = world;
   this.canvas = world.settings.canvas;
   this.canvasPosition = this.getElementPosition(this.canvas);
-  console.log("canvas position");
-  console.log(this.canvasPosition);
   this.ctx = world.ctx; 
-  this.ctx.strokeStyle = "rgb(255,0,0)";
+  this.ctx.strokeStyle = "rgb(0,0,0)";
   this.lines = [];
   this.currentLine = {};
-  this.lastPush = new Date().getTime();
   this.isMouseDown = false;
   this.canvas.onmousedown = this.mousedown.bind(this);
   this.canvas.onmouseup = this.mouseup.bind(this); 
@@ -226,14 +227,13 @@ Pencil.prototype = {
   },
 
   mousemove: function(e) {
-    if (this.isMouseDown && new Date().getTime() - this.lastPush > 100) {
+    if (this.isMouseDown) {
       this.ctx.clearRect(0,0, this.canvas.width, this.canvas.height);
       var mousePosition = {x: e.clientX - this.canvasPosition.x,
                            y: e.clientY - this.canvasPosition.y};
       this.currentLine.end = mousePosition;
       this.draw(this.currentLine.start, this.currentLine.end);
       this.drawAllLines();
-      this.lastPush = new Date().getTime();
     }
   },
 

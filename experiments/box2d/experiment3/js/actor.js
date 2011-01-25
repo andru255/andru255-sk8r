@@ -45,25 +45,32 @@ var MathUtil = (function() {
     return (a.y - b.y) / (a.x - b.y); 
   };
 
+  self.screenToWorld = function(screenPosition) {
+    var worldPosition = {
+      x : parseFloat(screenPosition.x / 40.0),
+      y : parseFloat(screenPosition.y / 40.0)
+    };
+    return worldPosition;
+  };
+
   return self;
 }());
 
 function Wheel(ctx, body, radius) {
   this.ctx = ctx;
   this.body = body;
-  this.radius = radius;
+  this.radius = MathUtil.worldLengthToScreen(radius);
 }
 
 Wheel.prototype.step = function(timeSinceLastFrame) {
   var worldPosition = this.body.GetPosition();
   var screenPosition = MathUtil.worldToScreen(worldPosition);
-
   this.ctx.fillStyle = "#ff0000";
   this.ctx.beginPath();
   this.ctx.arc(
     screenPosition.x, 
     screenPosition.y, 
-    MathUtil.worldLengthToScreen(this.radius), 
+    this.radius, 
     0, 
     Math.PI * 2, 
   false);
@@ -84,6 +91,7 @@ Rotated.prototype.step = function(timeSinceLastFrame) {
   this.ctx.save();
   this.ctx.translate(screenPosition.x, screenPosition.y);
   this.ctx.rotate(this.body.GetAngle());
+  var self = this;
   this.delegate.render(timeSinceLastFrame);	
   this.ctx.restore();
 };
@@ -95,7 +103,7 @@ function Board(ctx, body, length, thickness) {
   this.thicknessPxls = MathUtil.worldLengthToScreen(thickness);
 }
 
-Board.prototype.render = function()  {
+Board.prototype.render = function(timeSinceLastFrame)  {
   this.ctx.fillStyle = "#00ff00";
   this.ctx.fillRect(-this.lengthPxls/2, -this.thicknessPxls/2,
   this.lengthPxls, this.thicknessPxls);
