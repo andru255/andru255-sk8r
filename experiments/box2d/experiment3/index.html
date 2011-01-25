@@ -10,6 +10,7 @@
   }
 </style>
 <script type="text/javascript" src="../lib/Box2dWeb-2.1a.2.js"></script>
+<script type="text/javascript" src="js/actor.js"></script>
 <script type="text/javascript" src="js/pencil.js"></script>
 <script type="text/javascript" src="js/experiment3.js"></script>
 </head>
@@ -23,6 +24,8 @@ of the flash port of the
 <div class="box2d-canvas-container size640x480">
 <canvas id="canvas" width="640" height="480"></canvas>
 </div>
-<button onclick="drop();">Drop</button>
+<button onclick="play();">Play</button>
+<label for="debug">Debug?</label>
+<input type="checkbox" id="debug" />
 </body>
 </html>
