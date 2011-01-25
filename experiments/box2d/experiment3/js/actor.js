@@ -42,7 +42,7 @@ var MathUtil = (function() {
   };
 
   self.slope = function(a, b) {
-    return (a.y - b.y) / (a.x - b.y); 
+    return (a.y - b.y) / (a.x - b.x); 
   };
 
   self.screenToWorld = function(screenPosition) {

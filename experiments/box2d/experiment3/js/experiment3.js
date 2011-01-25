@@ -11,3 +11,8 @@ function play() {
   window.setInterval(world.update.bind(world), 1000 / 30);
 //  world.dropBalls();
 }
+function ollie() {
+  world.ollie(
+    document.getElementById("x").value,
+    document.getElementById("y").value);
+}
