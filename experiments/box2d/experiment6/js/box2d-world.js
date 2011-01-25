@@ -14,12 +14,15 @@ Copyright 2011 Johan Maasing
    limitations under the License.
  */
 var SK8RGameWorld = (function() {
+		var debugDraw = true ;
 		var self = {} ;
-		var ctx ;
 		var bodies ;
 		var joints ;
 		var world ;
-		
+		var actors ;
+		var timerID ;
+		var lastFrameTime ;
+
 		function initFixtures(progressMeter) {
 			var fixDef = new Box2D.Dynamics.b2FixtureDef();
 			fixDef.density = 1.0;
@@ -31,25 +34,55 @@ var SK8RGameWorld = (function() {
 			
 			var vertices = [
 				new Box2D.Common.Math.b2Vec2(0, 11),
-				new Box2D.Common.Math.b2Vec2(16,11),
+				new Box2D.Common.Math.b2Vec2(14,12),
+				new Box2D.Common.Math.b2Vec2(16, 11),
 				new Box2D.Common.Math.b2Vec2(16, 12),
 				new Box2D.Common.Math.b2Vec2(0, 12)
 			] ;
 			fixDef.shape = Box2D.Collision.Shapes.b2PolygonShape.AsArray(vertices, vertices.length) ;
 			bodyDef.position.x = 0 ;
-			bodyDef.position.y = 1 ;
+			bodyDef.position.y = 0 ;
 			world.CreateBody(bodyDef).CreateFixture(fixDef);
-			progressMeter.progress(0.4) ;
+			if (progressMeter) {
+				progressMeter.progress(0.4) ;
+			}
 		};
 		
 		function initBodies(progressMeter) {
-			progressMeter.progress(0.5) ;
+			var sk8board = new Sk8board({wheelRadius:0.1}) ;
+			sk8board.init({x:4,y:11}) ;
+			if (progressMeter) {
+				progressMeter.progress(0.5) ;
+			}
 		};
 		
+		function step() {
+			world.Step(1 / 30 // frame-rate
+			, 10 // velocity iterations
+			, 10 // position iterations
+			);
+			if (debugDraw) {
+				world.DrawDebugData();
+			} else {
+				SK8RCanvas.clear();
+			}
+			var now = new Date().getTime() ;
+			var timeSinceLastFrame = now - lastFrameTime ;
+			lastFrameTime = now ;
+			for (var n=0; n<actors.length; n++) {
+				actors[n].step(timeSinceLastFrame) ;
+			}
+			world.ClearForces();
+		};
+		
+		function start() {
+			lastFrameTime = new Date().getTime() ;
+			var callback = SK8RBindCall(self, step) ;
+			timerID = window.setInterval(callback, 1000 / 30);
+		}
+		
 		self.onLoad = function() {
-			var canvas = document.getElementById('canvas');
-			ctx = canvas.getContext('2d');
-			var progressBar = new ProgressBar(ctx) ;
+			var progressBar = new ProgressBar(SK8RCanvas.getContext()) ;
 			var progressMeter = 
 				new ProgressMeter("Initializing", 
 					[
@@ -58,36 +91,57 @@ var SK8RGameWorld = (function() {
 							console.log("Progress [" + taskname + "]="+progressFraction*100 + "%") ;
 						}
 					]) ;
+			// Iniitalize globals
 			bodies = new Array();
-			progressMeter.progress(0.1) ;
 			joints = new Array();
-			progressMeter.progress(0.2) ;
+			actors = new Array();
 			world = new Box2D.Dynamics.b2World(
-					new Box2D.Common.Math.b2Vec2(0, 10), true);
-			progressMeter.progress(0.3) ;
+					new Box2D.Common.Math.b2Vec2(0, 1), true);
+			// setup debug draw
+			if (debugDraw) {
+				var dd = new Box2D.Dynamics.b2DebugDraw();
+				dd.SetSprite(SK8RCanvas.getContext());
+				dd.SetDrawScale(40);
+				dd.SetFillAlpha(0.6);
+				dd.SetLineThickness(1.0);
+				dd.SetFlags(Box2D.Dynamics.b2DebugDraw.e_shapeBit
+						| Box2D.Dynamics.b2DebugDraw.e_jointBit);
+				world.SetDebugDraw(dd);
+			}
+			progressMeter.progress(0.1) ;
+			
+			// Setup game world
 			initFixtures(progressMeter) ;
 			initBodies(progressMeter) ;
 			
 			progressMeter.progress(1.0) ;
-			ctx.clearRect(0,0,640,480) ;
+			SK8RCanvas.clear() ;
+			
+			start() ;
 		};
 		
 		self.reset = function() {
+			window.clearInterval(timerID) ;
 			// Destroy the existing joints
-			for ( var n = 0; n < this.joints.length; n++) {
-				world.DestroyJoint(this.joints[n]);
+			for ( var n = 0; n < joints.length; n++) {
+				world.DestroyJoint(joints[n]);
 			}
 			joints = new Array() ;
 			// Destroy the existing bodies
-			for ( var n = 0; n < this.bodies.length; n++) {
-				world.DestroyBody(this.bodies[n]);
+			for ( var n = 0; n < bodies.length; n++) {
+				world.DestroyBody(bodies[n]);
 			}
 			bodies = new Array();
+			
+			// Setup game world
+			initFixtures() ;
+			initBodies() ;
+			start();
 		};
 		
 		self.createBody = function(bodyDef, fixtureDef) {
 			var fixtureDefinitions = new Array() ;
-			fixtureDefinitions = fixtureDefinitions.concat(tasknames) ;
+			fixtureDefinitions = fixtureDefinitions.concat(fixtureDef) ;
 			var body = world.CreateBody(bodyDef) ;
 			bodies.push(body) ;
 			for (var n=0; n<fixtureDefinitions.length; n++) {
@@ -97,13 +151,26 @@ var SK8RGameWorld = (function() {
 		};
 		
 		self.createJoint = function(jointDef) {
-			var joint = this.world.CreateJoint(b2JointDef);
-			this.joints.push(joint);
+			var joint = world.CreateJoint(jointDef);
+			joints.push(joint);
 		};			
+		
+		self.addActor = function(actor) {
+			if (actor) {
+				actors.push(actor) ;
+			}
+		};
+		
+		self.removeActor = function(actor) {
+			actors = actors.filter(function(curValue, curIndex, curArray) 
+				{ return (element != actor) ; }
+			);
+		};
 		
 		return self ;
 }()) ;
 
 window.onload = function() {
+	SK8RCanvas.onLoad() ;
 	SK8RGameWorld.onLoad() ;
 };
