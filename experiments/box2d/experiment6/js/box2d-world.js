@@ -34,10 +34,20 @@ var SK8RGameWorld = (function() {
 			
 			var vertices = [
 				new Box2D.Common.Math.b2Vec2(0, 11),
-				new Box2D.Common.Math.b2Vec2(14,12),
-				new Box2D.Common.Math.b2Vec2(16, 11),
-				new Box2D.Common.Math.b2Vec2(16, 12),
+				new Box2D.Common.Math.b2Vec2(14, 12),
 				new Box2D.Common.Math.b2Vec2(0, 12)
+			] ;
+			fixDef.shape = Box2D.Collision.Shapes.b2PolygonShape.AsArray(vertices, vertices.length) ;
+			bodyDef.position.x = 0 ;
+			bodyDef.position.y = 0 ;
+			world.CreateBody(bodyDef).CreateFixture(fixDef);
+			if (progressMeter) {
+				progressMeter.progress(0.35) ;
+			}
+			var vertices = [
+				new Box2D.Common.Math.b2Vec2(14, 12),
+				new Box2D.Common.Math.b2Vec2(16, 11),
+				new Box2D.Common.Math.b2Vec2(16, 12)
 			] ;
 			fixDef.shape = Box2D.Collision.Shapes.b2PolygonShape.AsArray(vertices, vertices.length) ;
 			bodyDef.position.x = 0 ;
@@ -50,7 +60,7 @@ var SK8RGameWorld = (function() {
 		
 		function initBodies(progressMeter) {
 			var sk8board = new Sk8board({wheelRadius:0.1}) ;
-			sk8board.init({x:4,y:11}) ;
+			sk8board.init({x:1,y:10.5}) ;
 			if (progressMeter) {
 				progressMeter.progress(0.5) ;
 			}
@@ -96,7 +106,7 @@ var SK8RGameWorld = (function() {
 			joints = new Array();
 			actors = new Array();
 			world = new Box2D.Dynamics.b2World(
-					new Box2D.Common.Math.b2Vec2(0, 1), true);
+					new Box2D.Common.Math.b2Vec2(0, 10), true);
 			// setup debug draw
 			if (debugDraw) {
 				var dd = new Box2D.Dynamics.b2DebugDraw();
