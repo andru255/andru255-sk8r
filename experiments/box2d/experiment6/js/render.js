@@ -14,40 +14,53 @@ Copyright 2011 Johan Maasing
    limitations under the License.
  */
 var SK8RCanvas = (function() {
-		var self = {} ;
-		var width = 640 ;
-		var height = 480 ;
-		var pixelsPerMeter = 40 ;
-		var cameraWorldPosition = {x : 8, y : 6} ;
-		var cameraDefaultWorldViewport = {x : -8, y : -6, width : 16, height : 12 } ;
-		var cameraWorldViewport = {x : -8, y : -6, width : 16, height : 12 } ;
-		var cameraZoom = 1 ;
-		var ctx ;
+    var self = {} ;
+    var width = 640 ;
+    var height = 480 ;
+    var pixelsPerMeter = 40 ;
+    var cameraWorldPosition = {
+        x : 8, 
+        y : 6
+    } ;
+    var cameraDefaultWorldViewport = {
+        x : -8, 
+        y : -6, 
+        width : 16, 
+        height : 12
+    } ;
+    var cameraWorldViewport = {
+        x : -8, 
+        y : -6, 
+        width : 16, 
+        height : 12
+    } ;
+    var cameraZoom = 1 ;
+    var ctx ;
 		
-		self.onLoad = function() {
-			var canvas = document.getElementById('canvas');
-			ctx = canvas.getContext('2d');
-		};
+    self.onLoad = function() {
+        var canvas = document.getElementById('canvas');
+        ctx = canvas.getContext('2d');
+    };
 		
-		self.getContext = function() {
-			return ctx ;
-		};
+    self.getContext = function() {
+        return ctx ;
+    };
 		
-		self.clear = function() {
-			ctx.clearRect(0,0,width,height);
-		};
+    self.clear = function() {
+        ctx.clearRect(0,0,width,height);
+    };
 		
-		self.worldToScreen = function(wp) {
-			var sp = {} ;
-			sp.x = Math.round(wp.x * pixelsPerMeter) ;
-			sp.y = Math.round(wp.y * pixelsPerMeter) ;
-			return sp ;
-		}
+    self.worldToScreen = function(wp) {
+        var sp = {} ;
+        sp.x = Math.round(wp.x * pixelsPerMeter) ;
+        sp.y = Math.round(wp.y * pixelsPerMeter) ;
+        return sp ;
+    }
 		
-		self.worldLengthToScreen = function(length) {
-			return Math.max(1, Math.round(length * pixelsPerMeter)) ;
-		}
+    self.worldLengthToScreen = function(length) {
+        return Math.max(1, Math.round(length * pixelsPerMeter)) ;
+    }
 		
-		return self ;
+    return self ;
 }()) ;
 
