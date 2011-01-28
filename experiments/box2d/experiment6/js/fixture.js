@@ -13,15 +13,15 @@ Copyright 2011 Johan Maasing
    See the License for the specific language governing permissions and
    limitations under the License.
  */
- var Fixtures = (function() {
-		var self = {} ;
-		var fixtures = new Array() ;
+var Fixtures = (function() {
+    var self = {} ;
+    var fixtures = new Array() ;
 		
-		self.step = function(timeSinceLastFrame) {
-			for (var n=0; n<actors.length; n++) {
-				actors[n].step(timeSinceLastFrame) ;
-			}
-		};
+    self.step = function(timeSinceLastFrame) {
+        for (var n=0; n<actors.length; n++) {
+            actors[n].step(timeSinceLastFrame) ;
+        }
+    };
 		
-		return self ;
+    return self ;
 }()) ;

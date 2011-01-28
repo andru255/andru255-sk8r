@@ -26,21 +26,21 @@ Employee.prototype = delegate(Person.prototype);
 Employee.prototype.constructor = Employee;
 */
 var SK8RDelegate = (function() {
-	function F() {}
-	return (function(obj) {
-		F.prototype = obj;
-		return new F();
-	});
+    function F() {}
+    return (function(obj) {
+        F.prototype = obj;
+        return new F();
+    });
 })();
 
 function SK8RBindCall(obj, fn) {
-	return function() {
-			fn.call(obj) ;
-	};
-};
+    return function() {
+        fn.call(obj) ;
+    };
+}
 
 function SK8RBindApply(obj, fn) {
-	return function() {
-			fn.apply(obj, arguments) ;
-	};
+    return function() {
+        fn.apply(obj, arguments) ;
+    };
 }
