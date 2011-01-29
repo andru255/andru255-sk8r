@@ -18,10 +18,7 @@ var SK8RCanvas = (function() {
     var width = 640 ;
     var height = 480 ;
     var pixelsPerMeter = 40 ;
-    var cameraWorldPosition = {
-        x : 8, 
-        y : 6
-    } ;
+
     var cameraDefaultWorldViewport = {
         lowerBound : new Box2D.Common.Math.b2Vec2(0, 0),
         upperBound : new Box2D.Common.Math.b2Vec2(16, 12)
@@ -48,8 +45,8 @@ var SK8RCanvas = (function() {
 		
     self.worldToScreen = function(wp) {
         var sp = {} ;
-        sp.x = Math.round(wp.x * pixelsPerMeter) ;
-        sp.y = Math.round(wp.y * pixelsPerMeter) ;
+        sp.x = Math.round((wp.x -cameraWorldViewport.lowerBound.x) * pixelsPerMeter) ;
+        sp.y = Math.round((wp.y - cameraWorldViewport.lowerBound.y) * pixelsPerMeter) ;
         return sp ;
     }
 		
@@ -59,6 +56,20 @@ var SK8RCanvas = (function() {
     
     self.getViewportAABB = function() {
         return cameraWorldViewport ;
+    }
+    
+    self.pan = function(x,y) {
+        cameraWorldViewport.lowerBound.x += x ; 
+        cameraWorldViewport.lowerBound.y += y ; 
+        cameraWorldViewport.upperBound.x += x ; 
+        cameraWorldViewport.upperBound.y += y ; 
+    }
+    
+    self.resetCamera = function() {
+        cameraWorldViewport.lowerBound.x = cameraDefaultWorldViewport.lowerBound.x ; 
+        cameraWorldViewport.lowerBound.y = cameraDefaultWorldViewport.lowerBound.y ; 
+        cameraWorldViewport.upperBound.x = cameraDefaultWorldViewport.upperBound.x ; 
+        cameraWorldViewport.upperBound.y = cameraDefaultWorldViewport.upperBound.y ; 
     }
     
     self.setupDebugDraw = function(world) {

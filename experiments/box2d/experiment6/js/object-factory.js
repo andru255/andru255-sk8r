@@ -14,127 +14,65 @@ Copyright 2011 Johan Maasing
    limitations under the License.
  */
 
-function WheelRenderer(body, radius) {
-    this.body = body ;
-    this.radius = radius ;
-}
-
-    WheelRenderer.prototype.render = function() {
-        var worldPosition = this.body.GetPosition() ;
-        var screenPosition = SK8RCanvas.worldToScreen(worldPosition) ;
-        var ctx = SK8RCanvas.getContext() ;	
-        ctx.fillStyle = "#ff0000";
-        ctx.beginPath();
-        ctx.arc(
-            screenPosition.x, 
-            screenPosition.y, 
-            SK8RCanvas.worldLengthToScreen(this.radius), 
-            0, 
-            Math.PI * 2, 
-            false);
-        ctx.closePath();
-        ctx.fill();
-    }
-
-
-function Rotated(body) {
-    this.body = body ;
-}
-
-    Rotated.prototype.render = function() {
-        var worldPosition = this.body.GetPosition() ;
-        var screenPosition = SK8RCanvas.worldToScreen(worldPosition) ;
-        var ctx = SK8RCanvas.getContext() ;	
-        ctx.save();
-        ctx.translate(screenPosition.x, screenPosition.y);
-        ctx.rotate(this.body.GetAngle());
-        this.renderRotated() ;	
-        ctx.restore() ;
-    }
-    Rotated.prototype.renderRotated = function() {
-        if (console) {
-            console.log("Forgot to override renderRotated") ;
-        }
-    }
-
-function DeckRenderer(body, length, thickness) {
-    Rotated.call(this, body) ;
-    this.length = length ;
-    this.thickness = thickness ;
-}
-
-DeckRenderer.prototype = SK8RDelegate(Rotated.prototype) ;
-    DeckRenderer.prototype.constructor = Deck;
-    DeckRenderer.prototype.renderRotated = function()  {
-        var lengthPxls = SK8RCanvas.worldLengthToScreen(this.length) ;
-        var thicknessPxls = SK8RCanvas.worldLengthToScreen(this.thickness) ;
-        var ctx = SK8RCanvas.getContext() ;	
-        ctx.fillStyle = "#00ff00";
-        ctx.fillRect(-lengthPxls/2, -thicknessPxls/2,
-            lengthPxls, thicknessPxls);
-    }
-
 function Sk8board(sizes) {
     sizes = sizes || {} ;
-    this.sizes = {} ;
     // According to http://defekt.se/2010/04/den-standardiserade-skateboarden/
-    this.sizes.wheelRadius = sizes.wheelRadius || 0.05 ;
-    this.sizes.boardThickness = sizes.boardThickness || 0.02 ;
-    this.sizes.boardLength = sizes.boardLength || 0.82 ;
-    this.sizes.truckOffset = sizes.truckOffset || 0.18 ;
+    sizes.wheelRadius = sizes.wheelRadius || 0.05 ;
+    sizes.boardThickness = sizes.boardThickness || 0.02 ;
+    sizes.boardLength = sizes.boardLength || 0.82 ;
+    sizes.truckOffset = sizes.truckOffset || 0.18 ;
+    
+    var offset = sizes.offset || {} ;
+    offset.x = offset.x || 0 ;
+    offset.y = offset.y || 0 ;
+    
+    var bodyDef = new Box2D.Dynamics.b2BodyDef();
+    var fixDef = new Box2D.Dynamics.b2FixtureDef();
+	
+    fixDef.density = 1.0;
+    fixDef.friction = 0.9;
+    fixDef.restitution = 0.1;
+    fixDef.shape = new Box2D.Collision.Shapes.b2CircleShape(sizes.wheelRadius);
+
+    // Back wheel
+    bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
+    bodyDef.position.x = sizes.wheelRadius + offset.x;
+    bodyDef.position.y = sizes.wheelRadius + offset.y;
+    var backwheel = SK8RGameWorld.createBody(bodyDef,fixDef);
+    backwheel.SetUserData(new WheelRenderer(backwheel, sizes.wheelRadius)) ;
+
+    // Front wheel
+    bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
+    bodyDef.position.x = sizes.boardLength-sizes.wheelRadius + offset.x;
+    bodyDef.position.y = sizes.wheelRadius + offset.y;
+    var frontwheel = SK8RGameWorld.createBody(bodyDef,fixDef);
+    frontwheel.SetUserData(new WheelRenderer(frontwheel, sizes.wheelRadius));
+	
+    // Deck
+    fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape();
+    fixDef.shape.SetAsBox(sizes.boardLength / 2, sizes.boardThickness / 2);
+    bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
+    bodyDef.position.x = sizes.boardLength / 2 + offset.x;
+    bodyDef.position.y = sizes.boardThickness / 2 + offset.y;
+    var board = SK8RGameWorld.createBody(bodyDef, fixDef);
+    board.SetUserData(new DeckRenderer(board, sizes.boardLength, sizes.boardThickness)) ;
+
+    // Trucks		
+    var b2JointDef = new Box2D.Dynamics.Joints.b2RevoluteJointDef();
+    b2JointDef.bodyA = backwheel;
+    b2JointDef.bodyB = board;
+    b2JointDef.localAnchorA = new Box2D.Common.Math.b2Vec2(0, 0);
+    b2JointDef.localAnchorB = 
+    new Box2D.Common.Math.b2Vec2(-sizes.boardLength/2 + sizes.truckOffset, sizes.wheelRadius);
+    SK8RGameWorld.createJoint(b2JointDef);
+	
+    b2JointDef.bodyA = frontwheel;
+    b2JointDef.bodyB = board;
+    b2JointDef.localAnchorA = new Box2D.Common.Math.b2Vec2(0, 0);
+    b2JointDef.localAnchorB = 
+    new Box2D.Common.Math.b2Vec2(sizes.boardLength/2 - sizes.truckOffset, sizes.wheelRadius);
+    SK8RGameWorld.createJoint(b2JointDef);
 }
-
-    Sk8board.prototype.init = function(offset) {
-        offset = offset || {} ;
-        offset.x = offset.x || 0 ;
-        offset.y = offset.y || 0 ;
-        var bodyDef = new Box2D.Dynamics.b2BodyDef();
-        var fixDef = new Box2D.Dynamics.b2FixtureDef();
-	
-        fixDef.density = 1.0;
-        fixDef.friction = 0.9;
-        fixDef.restitution = 0.1;
-        fixDef.shape = new Box2D.Collision.Shapes.b2CircleShape(this.sizes.wheelRadius);
-
-        // Back wheel
-        bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
-        bodyDef.position.x = this.sizes.wheelRadius + offset.x;
-        bodyDef.position.y = this.sizes.wheelRadius + offset.y;
-        var backwheel = SK8RGameWorld.createBody(bodyDef,fixDef);
-        backwheel.SetUserData(new WheelRenderer(backwheel, this.sizes.wheelRadius)) ;
-
-        // Front wheel
-        bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
-        bodyDef.position.x = this.sizes.boardLength-this.sizes.wheelRadius + offset.x;
-        bodyDef.position.y = this.sizes.wheelRadius + offset.y;
-        var frontwheel = SK8RGameWorld.createBody(bodyDef,fixDef);
-        frontwheel.SetUserData(new WheelRenderer(frontwheel, this.sizes.wheelRadius));
-	
-        // Deck
-        fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape();
-        fixDef.shape.SetAsBox(this.sizes.boardLength / 2, this.sizes.boardThickness / 2);
-        bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
-        bodyDef.position.x = this.sizes.boardLength / 2 + offset.x;
-        bodyDef.position.y = this.sizes.boardThickness / 2 + offset.y;
-        var board = SK8RGameWorld.createBody(bodyDef, fixDef);
-        board.SetUserData(new DeckRenderer(board, this.sizes.boardLength, this.sizes.boardThickness)) ;
-
-        // Trucks		
-        var b2JointDef = new Box2D.Dynamics.Joints.b2RevoluteJointDef();
-        b2JointDef.bodyA = backwheel;
-        b2JointDef.bodyB = board;
-        b2JointDef.localAnchorA = new Box2D.Common.Math.b2Vec2(0, 0);
-        b2JointDef.localAnchorB = 
-        new Box2D.Common.Math.b2Vec2(-this.sizes.boardLength/2 + this.sizes.truckOffset, this.sizes.wheelRadius);
-        SK8RGameWorld.createJoint(b2JointDef);
-	
-        b2JointDef.bodyA = frontwheel;
-        b2JointDef.bodyB = board;
-        b2JointDef.localAnchorA = new Box2D.Common.Math.b2Vec2(0, 0);
-        b2JointDef.localAnchorB = 
-        new Box2D.Common.Math.b2Vec2(this.sizes.boardLength/2 - this.sizes.truckOffset, this.sizes.wheelRadius);
-        SK8RGameWorld.createJoint(b2JointDef);
-    }
 
 function createRobot(bodies, joints, ctx, world, sizes) {
     sizes = sizes || {} ;

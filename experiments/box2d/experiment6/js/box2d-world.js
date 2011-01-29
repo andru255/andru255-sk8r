@@ -41,7 +41,9 @@ var SK8RGameWorld = (function() {
         fixDef.shape = Box2D.Collision.Shapes.b2PolygonShape.AsArray(vertices, vertices.length) ;
         bodyDef.position.x = 0 ;
         bodyDef.position.y = 0 ;
-        world.CreateBody(bodyDef).CreateFixture(fixDef);
+        var staticBody = world.CreateBody(bodyDef); 
+        staticBody.CreateFixture(fixDef);
+        staticBody.SetUserData(new GroundRenderer(staticBody, vertices)) ;
         if (progressMeter) {
             progressMeter.progress(0.35) ;
         }
@@ -53,19 +55,21 @@ var SK8RGameWorld = (function() {
         fixDef.shape = Box2D.Collision.Shapes.b2PolygonShape.AsArray(vertices, vertices.length) ;
         bodyDef.position.x = 0 ;
         bodyDef.position.y = 0 ;
-        world.CreateBody(bodyDef).CreateFixture(fixDef);
+        staticBody = world.CreateBody(bodyDef); 
+        staticBody.CreateFixture(fixDef);
+        staticBody.SetUserData(new GroundRenderer(staticBody, vertices)) ;
         if (progressMeter) {
             progressMeter.progress(0.4) ;
         }
     }
 		
     function initBodies(progressMeter) {
-        var sk8board = new Sk8board({
-            wheelRadius:0.1
-        }) ;
-        sk8board.init({
-            x:1,
-            y:10.5
+        Sk8board({
+            wheelRadius:0.1,
+            offset : {
+                x:1,
+                y:10.5
+            }
         }) ;
         if (progressMeter) {
             progressMeter.progress(0.5) ;
