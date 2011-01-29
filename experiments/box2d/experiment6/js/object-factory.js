@@ -72,6 +72,8 @@ function Sk8board(sizes) {
     b2JointDef.localAnchorB = 
     new Box2D.Common.Math.b2Vec2(sizes.boardLength/2 - sizes.truckOffset, sizes.wheelRadius);
     SK8RGameWorld.createJoint(b2JointDef);
+    
+    return board ;
 }
 
 function createRobot(bodies, joints, ctx, world, sizes) {

@@ -23,6 +23,8 @@ var SK8RGameWorld = (function() {
     var timerID ;
     var lastFrameTime ;
     var renderCallback = SK8RBindApply(self, render) ;
+    var deck ;
+    var cameraFollowsDeck = false ;
 
     function initFixtures(progressMeter) {
         var fixDef = new Box2D.Dynamics.b2FixtureDef();
@@ -64,7 +66,7 @@ var SK8RGameWorld = (function() {
     }
 		
     function initBodies(progressMeter) {
-        Sk8board({
+        deck = Sk8board({
             wheelRadius:0.1,
             offset : {
                 x:1,
@@ -88,7 +90,12 @@ var SK8RGameWorld = (function() {
             for (var n=0; n<actors.length; n++) {
                 actors[n].step(timeSinceLastFrame) ;
             }
-        
+            
+            if (cameraFollowsDeck) {
+                var wp = deck.GetPosition() ;
+                SK8RCanvas.panTo(wp.x, wp.y);
+            }
+
             // Call renderers
             if (debugDraw) {
                 world.DrawDebugData();
@@ -171,6 +178,10 @@ var SK8RGameWorld = (function() {
         initBodies() ;
         start();
     };
+    
+    self.toggleFollow = function() {
+        cameraFollowsDeck = !cameraFollowsDeck ;
+    }
 		
     self.createBody = function(bodyDef, fixtureDef) {
         var fixtureDefinitions = new Array() ;

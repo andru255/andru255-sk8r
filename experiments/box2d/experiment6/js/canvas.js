@@ -18,10 +18,19 @@ var SK8RCanvas = (function() {
     var width = 640 ;
     var height = 480 ;
     var pixelsPerMeter = 40 ;
-
+    var cameraDefaultWorldViewportValues = {
+        halfWidth : 8,
+        helfHeight : 6,
+        xoffset : 8,
+        yoffset : 6
+    };
     var cameraDefaultWorldViewport = {
-        lowerBound : new Box2D.Common.Math.b2Vec2(0, 0),
-        upperBound : new Box2D.Common.Math.b2Vec2(16, 12)
+        lowerBound : new Box2D.Common.Math.b2Vec2(
+            cameraDefaultWorldViewportValues.xoffset-cameraDefaultWorldViewportValues.halfWidth, 
+            cameraDefaultWorldViewportValues.yoffset-cameraDefaultWorldViewportValues.helfHeight),
+        upperBound : new Box2D.Common.Math.b2Vec2(
+            cameraDefaultWorldViewportValues.xoffset+cameraDefaultWorldViewportValues.halfWidth, 
+            cameraDefaultWorldViewportValues.yoffset+cameraDefaultWorldViewportValues.helfHeight)
     } ;
     var cameraWorldViewport = {
         lowerBound : new Box2D.Common.Math.b2Vec2(cameraDefaultWorldViewport.lowerBound.x, cameraDefaultWorldViewport.lowerBound.y),
@@ -63,6 +72,13 @@ var SK8RCanvas = (function() {
         cameraWorldViewport.lowerBound.y += y ; 
         cameraWorldViewport.upperBound.x += x ; 
         cameraWorldViewport.upperBound.y += y ; 
+    }
+    
+    self.panTo = function(x,y) {
+        cameraWorldViewport.lowerBound.x = x - cameraDefaultWorldViewportValues.halfWidth ; 
+        cameraWorldViewport.lowerBound.y = y - cameraDefaultWorldViewportValues.helfHeight ; 
+        cameraWorldViewport.upperBound.x = x + cameraDefaultWorldViewportValues.halfWidth; 
+        cameraWorldViewport.upperBound.y = y + cameraDefaultWorldViewportValues.helfHeight; 
     }
     
     self.resetCamera = function() {

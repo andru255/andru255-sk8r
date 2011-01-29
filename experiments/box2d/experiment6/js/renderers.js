@@ -43,8 +43,6 @@ function GroundRenderer(body, vertices) {
 }
 
     GroundRenderer.prototype.render = function() {
-        var worldPosition = this.body.GetPosition() ;
-        var screenPosition = SK8RCanvas.worldToScreen(worldPosition) ;
         var ctx = SK8RCanvas.getContext() ;	
         ctx.fillStyle = "#c0c0e0";
         ctx.beginPath();
