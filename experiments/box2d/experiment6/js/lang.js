@@ -35,12 +35,12 @@ var SK8RDelegate = (function() {
 
 function SK8RBindCall(obj, fn) {
     return function() {
-        fn.call(obj) ;
+        return fn.call(obj) ;
     };
 }
 
 function SK8RBindApply(obj, fn) {
     return function() {
-        fn.apply(obj, arguments) ;
+        return fn.apply(obj, arguments) ;
     };
 }

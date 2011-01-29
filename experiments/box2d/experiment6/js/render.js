@@ -23,16 +23,12 @@ var SK8RCanvas = (function() {
         y : 6
     } ;
     var cameraDefaultWorldViewport = {
-        x : -8, 
-        y : -6, 
-        width : 16, 
-        height : 12
+        lowerBound : new Box2D.Common.Math.b2Vec2(0, 0),
+        upperBound : new Box2D.Common.Math.b2Vec2(16, 12)
     } ;
     var cameraWorldViewport = {
-        x : -8, 
-        y : -6, 
-        width : 16, 
-        height : 12
+        lowerBound : new Box2D.Common.Math.b2Vec2(cameraDefaultWorldViewport.lowerBound.x, cameraDefaultWorldViewport.lowerBound.y),
+        upperBound : new Box2D.Common.Math.b2Vec2(cameraDefaultWorldViewport.upperBound.x, cameraDefaultWorldViewport.upperBound.y)
     } ;
     var cameraZoom = 1 ;
     var ctx ;
@@ -59,6 +55,21 @@ var SK8RCanvas = (function() {
 		
     self.worldLengthToScreen = function(length) {
         return Math.max(1, Math.round(length * pixelsPerMeter)) ;
+    }
+    
+    self.getViewportAABB = function() {
+        return cameraWorldViewport ;
+    }
+    
+    self.setupDebugDraw = function(world) {
+        var dd = new Box2D.Dynamics.b2DebugDraw();
+        dd.SetSprite(ctx);
+        dd.SetDrawScale(pixelsPerMeter);
+        dd.SetFillAlpha(0.6);
+        dd.SetLineThickness(1.0);
+        dd.SetFlags(Box2D.Dynamics.b2DebugDraw.e_shapeBit
+            | Box2D.Dynamics.b2DebugDraw.e_jointBit);
+        world.SetDebugDraw(dd);
     }
 		
     return self ;

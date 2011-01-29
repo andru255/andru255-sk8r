@@ -14,7 +14,7 @@ Copyright 2011 Johan Maasing
    limitations under the License.
  */
 var SK8RGameWorld = (function() {
-    var debugDraw = true ;
+    var debugDraw = false ;
     var self = {} ;
     var bodies ;
     var joints ;
@@ -22,6 +22,7 @@ var SK8RGameWorld = (function() {
     var actors ;
     var timerID ;
     var lastFrameTime ;
+    var renderCallback = SK8RBindApply(self, render) ;
 
     function initFixtures(progressMeter) {
         var fixDef = new Box2D.Dynamics.b2FixtureDef();
@@ -72,22 +73,41 @@ var SK8RGameWorld = (function() {
     }
 		
     function step() {
-        world.Step(1 / 30 // frame-rate
-            , 10 // velocity iterations
-            , 10 // position iterations
-            );
-        if (debugDraw) {
-            world.DrawDebugData();
+        if (!world.IsLocked()) {
+            // Advance physics
+            world.Step(1 / 30, 10, 10);
+
+            // Let AI-actors advance
+            var now = new Date().getTime() ;
+            var timeSinceLastFrame = now - lastFrameTime ;
+            lastFrameTime = now ;
+            for (var n=0; n<actors.length; n++) {
+                actors[n].step(timeSinceLastFrame) ;
+            }
+        
+            // Call renderers
+            if (debugDraw) {
+                world.DrawDebugData();
+            } else {
+                SK8RCanvas.clear();
+                var viewportAABB = SK8RCanvas.getViewportAABB() ;
+                world.QueryAABB(renderCallback, viewportAABB) ;
+            }
+            world.ClearForces();
         } else {
-            SK8RCanvas.clear();
+            if (console) {
+                console.log("Loosing frame");
+            }
         }
-        var now = new Date().getTime() ;
-        var timeSinceLastFrame = now - lastFrameTime ;
-        lastFrameTime = now ;
-        for (var n=0; n<actors.length; n++) {
-            actors[n].step(timeSinceLastFrame) ;
+    }
+    
+    function render(b2Fixture) {
+        // TODO: bodies with several fixtures will be rendered several times using this. Might be ok
+        var userdata = b2Fixture.GetBody().GetUserData() ;
+        if (userdata && userdata.render) {
+            userdata.render() ;
         }
-        world.ClearForces();
+        return true ;
     }
 		
     function start() {
@@ -114,14 +134,7 @@ var SK8RGameWorld = (function() {
             new Box2D.Common.Math.b2Vec2(0, 10), true);
         // setup debug draw
         if (debugDraw) {
-            var dd = new Box2D.Dynamics.b2DebugDraw();
-            dd.SetSprite(SK8RCanvas.getContext());
-            dd.SetDrawScale(40);
-            dd.SetFillAlpha(0.6);
-            dd.SetLineThickness(1.0);
-            dd.SetFlags(Box2D.Dynamics.b2DebugDraw.e_shapeBit
-                | Box2D.Dynamics.b2DebugDraw.e_jointBit);
-            world.SetDebugDraw(dd);
+            SK8RCanvas.setupDebugDraw(world);
         }
         progressMeter.progress(0.1) ;
 			
@@ -136,14 +149,15 @@ var SK8RGameWorld = (function() {
     };
 		
     self.reset = function() {
+        var n ;
         window.clearInterval(timerID) ;
         // Destroy the existing joints
-        for ( var n = 0; n < joints.length; n++) {
+        for (n = 0; n < joints.length; n++) {
             world.DestroyJoint(joints[n]);
         }
         joints = new Array() ;
         // Destroy the existing bodies
-        for ( var n = 0; n < bodies.length; n++) {
+        for (n = 0; n < bodies.length; n++) {
             world.DestroyBody(bodies[n]);
         }
         bodies = new Array();

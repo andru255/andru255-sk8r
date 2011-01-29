@@ -17,9 +17,10 @@ Copyright 2011 Johan Maasing
 function Wheel(body, radius) {
     this.body = body ;
     this.radius = radius ;
+    this.body.SetUserData(this) ;
 }
 
-    Wheel.prototype.step = function() {
+    Wheel.prototype.render = function() {
         var worldPosition = this.body.GetPosition() ;
         var screenPosition = SK8RCanvas.worldToScreen(worldPosition) ;
         var ctx = SK8RCanvas.getContext() ;	
@@ -34,23 +35,29 @@ function Wheel(body, radius) {
             false);
         ctx.closePath();
         ctx.fill();
-    };
+    }
 
 
 function Rotated(body) {
     this.body = body ;
+    this.body.SetUserData(this) ;
 }
 
-    Rotated.prototype.step = function(timeSinceLastFrame) {
+    Rotated.prototype.render = function() {
         var worldPosition = this.body.GetPosition() ;
         var screenPosition = SK8RCanvas.worldToScreen(worldPosition) ;
         var ctx = SK8RCanvas.getContext() ;	
         ctx.save();
         ctx.translate(screenPosition.x, screenPosition.y);
         ctx.rotate(this.body.GetAngle());
-        this.render(timeSinceLastFrame) ;	
+        this.renderRotated() ;	
         ctx.restore() ;
-    };
+    }
+    Rotated.prototype.renderRotated = function() {
+        if (console) {
+            console.log("Forgot to override renderRotated") ;
+        }
+    }
 
 function Deck(body, length, thickness) {
     Rotated.call(this, body) ;
@@ -60,7 +67,7 @@ function Deck(body, length, thickness) {
 
 Deck.prototype = SK8RDelegate(Rotated.prototype) ;
     Deck.prototype.constructor = Deck;
-    Deck.prototype.render = function()  {
+    Deck.prototype.renderRotated = function()  {
         var lengthPxls = SK8RCanvas.worldLengthToScreen(this.length) ;
         var thicknessPxls = SK8RCanvas.worldLengthToScreen(this.thickness) ;
         var ctx = SK8RCanvas.getContext() ;	
@@ -96,14 +103,14 @@ function Sk8board(sizes) {
         bodyDef.position.x = this.sizes.wheelRadius + offset.x;
         bodyDef.position.y = this.sizes.wheelRadius + offset.y;
         var backwheel = SK8RGameWorld.createBody(bodyDef,fixDef);
-        SK8RGameWorld.addActor(new Wheel(backwheel, this.sizes.wheelRadius)) ;
+        new Wheel(backwheel, this.sizes.wheelRadius) ;
 
         // Front wheel
         bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
         bodyDef.position.x = this.sizes.boardLength-this.sizes.wheelRadius + offset.x;
         bodyDef.position.y = this.sizes.wheelRadius + offset.y;
         var frontwheel = SK8RGameWorld.createBody(bodyDef,fixDef);
-        SK8RGameWorld.addActor(new Wheel(frontwheel, this.sizes.wheelRadius)) ;
+        new Wheel(frontwheel, this.sizes.wheelRadius);
 	
         // Deck
         fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape();
@@ -112,8 +119,7 @@ function Sk8board(sizes) {
         bodyDef.position.x = this.sizes.boardLength / 2 + offset.x;
         bodyDef.position.y = this.sizes.boardThickness / 2 + offset.y;
         var board = SK8RGameWorld.createBody(bodyDef, fixDef);
-        var deck = new Deck(board, this.sizes.boardLength, this.sizes.boardThickness) ;
-        SK8RGameWorld.addActor(deck) ;
+        new Deck(board, this.sizes.boardLength, this.sizes.boardThickness) ;
 
         // Trucks		
         var b2JointDef = new Box2D.Dynamics.Joints.b2RevoluteJointDef();
