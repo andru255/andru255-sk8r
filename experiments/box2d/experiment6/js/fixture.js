@@ -19,9 +19,15 @@ var Fixtures = (function() {
 		
     self.step = function(timeSinceLastFrame) {
         for (var n=0; n<actors.length; n++) {
-            actors[n].step(timeSinceLastFrame) ;
+            fixtures[n].step(timeSinceLastFrame) ;
         }
-    };
+    }
+    
+    self.destroy = function() {
+        for (var n=0; n<actors.length; n++) {
+            fixtures[n].step(timeSinceLastFrame) ;
+        }
+    }
 		
     return self ;
 }()) ;
