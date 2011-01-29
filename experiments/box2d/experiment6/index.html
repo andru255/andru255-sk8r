@@ -50,33 +50,52 @@
         <div class="box2d-canvas-container size640x480">
             <canvas id="canvas" width="640" height="480"></canvas>
         </div>
-        <button onclick="SK8RGameWorld.reset();">Reset</button>
         <table>
+            <thead>
+                <tr>
+                    <th>Dynamic bodies</th>
+                    <th>Camera</th>
+                </tr>
+            </thead>
             <tbody>
                 <tr>
-                    <td></td>
                     <td>
-                        <button onclick="SK8RCanvas.pan(0,-1);">Pan</button>
-                    </td>
-                    <td></td>
-                </tr>
-                <tr>
-                    <td>
-                        <button onclick="SK8RCanvas.pan(-1,0);">Pan</button>
+                        <button onclick="SK8RGameWorld.reset();">Reset</button>
                     </td>
                     <td>
-                        <button onclick="SK8RCanvas.resetCamera();">Default</button>
+                        <div>
+                            <button onclick="SK8RGameWorld.toggleFollow()">Toggle follow mode</button>
+                        </div>
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <button onclick="SK8RCanvas.pan(0,-1);">Pan</button>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <button onclick="SK8RCanvas.pan(-1,0);">Pan</button>
+                                    </td>
+                                    <td>
+                                        <button onclick="SK8RCanvas.resetCamera();">Default</button>
+                                    </td>
+                                    <td>
+                                        <button onclick="SK8RCanvas.pan(1,0);">Pan</button>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <button onclick="SK8RCanvas.pan(0,1);">Pan</button>
+                                    </td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </td>
-                    <td>
-                        <button onclick="SK8RCanvas.pan(1,0);">Pan</button>
-                    </td>
-                </tr>
-                <tr>
-                    <td></td>
-                    <td>
-                        <button onclick="SK8RCanvas.pan(0,1);">Pan</button>
-                    </td>
-                    <td></td>
                 </tr>
             </tbody>
         </table>
