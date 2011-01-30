@@ -76,11 +76,43 @@ function Sk8board(sizes) {
     return board ;
 }
 
-function createRobot(bodies, joints, ctx, world, sizes) {
+function createDemoGround() {
+    var fixDef = new Box2D.Dynamics.b2FixtureDef();
+    fixDef.density = 1.0;
+    fixDef.friction = 0.9;
+    fixDef.restitution = 0.01;
+			
+    var bodyDef = new Box2D.Dynamics.b2BodyDef();
+    bodyDef.type = Box2D.Dynamics.b2Body.b2_staticBody;
+			
+    var vertices = [
+    new Box2D.Common.Math.b2Vec2(0, 11),
+    new Box2D.Common.Math.b2Vec2(14, 12),
+    new Box2D.Common.Math.b2Vec2(0, 12)
+    ] ;
+    fixDef.shape = Box2D.Collision.Shapes.b2PolygonShape.AsArray(vertices, vertices.length) ;
+    bodyDef.position.x = 0 ;
+    bodyDef.position.y = 0 ;
+    var staticBody = SK8RGameWorld.createUntrackedBody(bodyDef, fixDef) ; 
+    staticBody.SetUserData(new GroundRenderer(staticBody, vertices)) ;    
+
+    vertices = [
+    new Box2D.Common.Math.b2Vec2(14, 12),
+    new Box2D.Common.Math.b2Vec2(16, 11.5),
+    new Box2D.Common.Math.b2Vec2(16, 12)
+    ] ;
+    fixDef.shape = Box2D.Collision.Shapes.b2PolygonShape.AsArray(vertices, vertices.length) ;
+    bodyDef.position.x = 0 ;
+    bodyDef.position.y = 0 ;
+    staticBody = SK8RGameWorld.createUntrackedBody(bodyDef, fixDef) ; 
+    staticBody.SetUserData(new GroundRenderer(staticBody, vertices)) ;    
+}
+
+function createRobot(sizes) {
     sizes = sizes || {} ;
     sizes.scale = sizes.scale || 1 ;
-    sizes.createoffsetx = sizes.createoffsetx || 0.7*sizes.scale ;
-    sizes.createoffsety = sizes.createoffsety || -1.7*sizes.scale ;
+    sizes.offsetx = sizes.offsetx || 0.7*sizes.scale ;
+    sizes.offsety = sizes.offsety || -1.7*sizes.scale ;
 	
     var bodyDef = new Box2D.Dynamics.b2BodyDef();
     bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
@@ -90,54 +122,53 @@ function createRobot(bodies, joints, ctx, world, sizes) {
     fixDef.friction = 0.9;
     fixDef.restitution = 0.1;
     fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape();
+    
+    var limbHalfWidth = 0.25*sizes.scale ;
+    var limbHalfHeight = 0.5*sizes.scale ;
 	
     // right leg
-    bodyDef.position.x = sizes.createoffsetx + (0.5*sizes.scale);
-    bodyDef.position.y = sizes.createoffsety + (3*sizes.scale);
-    fixDef.shape.SetAsBox(0.25*sizes.scale, 0.5*sizes.scale);
-    var rightLeg = world.CreateBody(bodyDef);
-    rightLeg.CreateFixture(fixDef) ;
-    bodies.push(rightLeg) ;
+    bodyDef.position.x = sizes.offsetx + (0.75*sizes.scale);
+    bodyDef.position.y = sizes.offsety + (3*sizes.scale);
+    fixDef.shape.SetAsBox(limbHalfWidth, limbHalfHeight);
+    var rightLeg = SK8RGameWorld.createBody(bodyDef, fixDef) ; 
+    rightLeg.SetUserData(new ArmRenderer(rightLeg, limbHalfWidth*2, limbHalfHeight*2)) ;
 	
     // Left leg
-    bodyDef.position.x = sizes.createoffsetx + (-0.5*sizes.scale);
-    bodyDef.position.y = sizes.createoffsety + (3*sizes.scale);
-    fixDef.shape.SetAsBox(0.25*sizes.scale, 0.5*sizes.scale);
-    var leftLeg = world.CreateBody(bodyDef);
-    leftLeg.CreateFixture(fixDef) ;
-    bodies.push(leftLeg) ;
+    bodyDef.position.x = sizes.offsetx + (1.75*sizes.scale);
+    bodyDef.position.y = sizes.offsety + (3*sizes.scale);
+    fixDef.shape.SetAsBox(limbHalfWidth, limbHalfHeight);
+    var leftLeg = SK8RGameWorld.createBody(bodyDef, fixDef) ; 
+    leftLeg.SetUserData(new ArmRenderer(leftLeg, limbHalfWidth*2, limbHalfHeight*2)) ;
 	
     // Right arm
-    bodyDef.position.x = sizes.createoffsetx + (2.25*sizes.scale);
-    bodyDef.position.y = sizes.createoffsety + (1.5*sizes.scale);
-    fixDef.shape.SetAsBox(0.25*sizes.scale, 0.5*sizes.scale);
-    var rightArm = world.CreateBody(bodyDef);
-    rightArm.CreateFixture(fixDef) ;
-    bodies.push(rightArm) ;
+    bodyDef.position.x = sizes.offsetx + (2.25*sizes.scale);
+    bodyDef.position.y = sizes.offsety + (1.5*sizes.scale);
+    fixDef.shape.SetAsBox(limbHalfWidth, limbHalfHeight);
+    var rightArm = SK8RGameWorld.createBody(bodyDef, fixDef) ; 
+    rightArm.SetUserData(new ArmRenderer(rightArm, limbHalfWidth*2, limbHalfHeight*2)) ;
 	
     // Left arm
-    bodyDef.position.x = sizes.createoffsetx + (0.5*sizes.scale);
-    bodyDef.position.y = sizes.createoffsety + (1.5*sizes.scale);
-    fixDef.shape.SetAsBox(0.25*sizes.scale, 0.5*sizes.scale);
-    var leftArm = world.CreateBody(bodyDef);
-    leftArm.CreateFixture(fixDef) ;
-    bodies.push(leftArm) ;
+    bodyDef.position.x = sizes.offsetx + (0.25*sizes.scale);
+    bodyDef.position.y = sizes.offsety + (1.5*sizes.scale);
+    fixDef.shape.SetAsBox(limbHalfWidth, limbHalfHeight);
+    var leftArm = SK8RGameWorld.createBody(bodyDef, fixDef) ; 
+    leftArm.SetUserData(new ArmRenderer(leftArm, limbHalfWidth*2, limbHalfHeight*2)) ;
 	
     // Body
-    bodyDef.position.x = sizes.createoffsetx + (1.25*sizes.scale);
-    bodyDef.position.y = sizes.createoffsety + (1.25*sizes.scale);
-    fixDef.shape.SetAsArray([
-        new Box2D.Common.Math.b2Vec2(-0.75 * sizes.scale, -0.75 * sizes.scale),
-        new Box2D.Common.Math.b2Vec2(-0.25 * sizes.scale, -1.25 * sizes.scale),
-        new Box2D.Common.Math.b2Vec2(0.25 * sizes.scale, -1.25 * sizes.scale),
-        new Box2D.Common.Math.b2Vec2(0.75 * sizes.scale, -0.75 * sizes.scale),
-        new Box2D.Common.Math.b2Vec2(0.75 * sizes.scale, 1.25 * sizes.scale),
-        new Box2D.Common.Math.b2Vec2(-0.75 * sizes.scale, 1.25 * sizes.scale)
-        ]);
-    var body = world.CreateBody(bodyDef) ;
-    body.CreateFixture(fixDef) ;
-    bodies.push(body) ;
-	
+    bodyDef.position.x = sizes.offsetx + (1.25*sizes.scale);
+    bodyDef.position.y = sizes.offsety + (1.25*sizes.scale);
+    var bodyVertices = [
+    new Box2D.Common.Math.b2Vec2(-0.75 * sizes.scale, -0.75 * sizes.scale),
+    new Box2D.Common.Math.b2Vec2(-0.25 * sizes.scale, -1.25 * sizes.scale),
+    new Box2D.Common.Math.b2Vec2(0.25 * sizes.scale, -1.25 * sizes.scale),
+    new Box2D.Common.Math.b2Vec2(0.75 * sizes.scale, -0.75 * sizes.scale),
+    new Box2D.Common.Math.b2Vec2(0.75 * sizes.scale, 1.25 * sizes.scale),
+    new Box2D.Common.Math.b2Vec2(-0.75 * sizes.scale, 1.25 * sizes.scale)
+    ] ;
+    fixDef.shape.SetAsArray(bodyVertices);
+    var body = SK8RGameWorld.createBody(bodyDef, fixDef) ; 
+    body.SetUserData(new BodyRenderer(body, bodyVertices)) ;
+
     // Arm joints
     var b2JointDef = new Box2D.Dynamics.Joints.b2RevoluteJointDef();
     b2JointDef.bodyA = body;
@@ -146,22 +177,21 @@ function createRobot(bodies, joints, ctx, world, sizes) {
     b2JointDef.bodyB = rightArm;
     b2JointDef.localAnchorA = new Box2D.Common.Math.b2Vec2(0.75*sizes.scale, -0.25*sizes.scale);
     b2JointDef.localAnchorB = 
-    new Box2D.Common.Math.b2Vec2(-0.25*sizes.scale, -0.5*sizes.scale);
+    new Box2D.Common.Math.b2Vec2(-limbHalfWidth, -limbHalfHeight);
     b2JointDef.lowerAngle = -Math.PI ;
     b2JointDef.upperAngle = 0.5 ;
     b2JointDef.enableLimit = true ;
-    joint = world.CreateJoint(b2JointDef);
-    joints.push(joint);
+    SK8RGameWorld.createJoint(b2JointDef) ; 
+
     // Left arm
     b2JointDef.bodyB = leftArm;
     b2JointDef.localAnchorA = new Box2D.Common.Math.b2Vec2(-0.75*sizes.scale, -0.25*sizes.scale);
     b2JointDef.localAnchorB = 
-    new Box2D.Common.Math.b2Vec2(0.25*sizes.scale, -0.5*sizes.scale);
+    new Box2D.Common.Math.b2Vec2(limbHalfWidth, -limbHalfHeight);
     b2JointDef.lowerAngle = -0.5 ;
     b2JointDef.upperAngle = Math.PI;
     b2JointDef.enableLimit = true ;
-    joint = world.CreateJoint(b2JointDef);
-    joints.push(joint);
+    SK8RGameWorld.createJoint(b2JointDef) ; 
 	
     // Leg joints
     b2JointDef = new Box2D.Dynamics.Joints.b2PrismaticJointDef();
@@ -174,15 +204,13 @@ function createRobot(bodies, joints, ctx, world, sizes) {
     b2JointDef.bodyB = rightLeg;
     b2JointDef.localAnchorA = new Box2D.Common.Math.b2Vec2(0.5*sizes.scale, 1.25*sizes.scale);
     b2JointDef.localAnchorB = 
-    new Box2D.Common.Math.b2Vec2(0*sizes.scale, -0.5*sizes.scale);
-    joint = world.CreateJoint(b2JointDef);
-    joints.push(joint);
+    new Box2D.Common.Math.b2Vec2(0*sizes.scale, -limbHalfHeight);
+    SK8RGameWorld.createJoint(b2JointDef) ; 
 	
     // Left leg
     b2JointDef.bodyB = leftLeg;
     b2JointDef.localAnchorA = new Box2D.Common.Math.b2Vec2(-0.5*sizes.scale, 1.25*sizes.scale);
     b2JointDef.localAnchorB = 
-    new Box2D.Common.Math.b2Vec2(0*sizes.scale, -0.5*sizes.scale);
-    joint = world.CreateJoint(b2JointDef);
-    joints.push(joint);
+    new Box2D.Common.Math.b2Vec2(0*sizes.scale, -limbHalfHeight);
+    SK8RGameWorld.createJoint(b2JointDef) ; 
 }

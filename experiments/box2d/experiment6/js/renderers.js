@@ -44,7 +44,7 @@ function GroundRenderer(body, vertices) {
 
     GroundRenderer.prototype.render = function() {
         var ctx = SK8RCanvas.getContext() ;	
-        ctx.fillStyle = "#c0c0e0";
+        ctx.fillStyle = "#c0c0c0";
         ctx.beginPath();
         var screenCoords = SK8RCanvas.worldToScreen(this.vertices[0]) ;
         ctx.moveTo(screenCoords.x, screenCoords.y);
@@ -91,4 +91,43 @@ DeckRenderer.prototype = SK8RDelegate(Rotated.prototype) ;
         ctx.fillStyle = "#00ff00";
         ctx.fillRect(-lengthPxls/2, -thicknessPxls/2,
             lengthPxls, thicknessPxls);
+    }
+
+function ArmRenderer(body, width, height) {
+    Rotated.call(this, body) ;
+    this.width = width ;
+    this.height = height ;
+}
+
+ArmRenderer.prototype = SK8RDelegate(Rotated.prototype) ;
+    ArmRenderer.prototype.constructor = ArmRenderer;
+    ArmRenderer.prototype.renderRotated = function()  {
+        var widthPxls = SK8RCanvas.worldLengthToScreen(this.width) ;
+        var heightPxls = SK8RCanvas.worldLengthToScreen(this.height) ;
+        var ctx = SK8RCanvas.getContext() ;	
+        ctx.fillStyle = "#456789";
+        ctx.fillRect(-widthPxls/2, -heightPxls/2,
+            widthPxls, heightPxls);
+    }
+
+
+function BodyRenderer(body, vertices) {
+    Rotated.call(this, body) ;
+    this.vertices = vertices ;
+}
+
+BodyRenderer.prototype = SK8RDelegate(Rotated.prototype) ;
+    BodyRenderer.prototype.constructor = BodyRenderer;
+    BodyRenderer.prototype.renderRotated = function()  {
+        var ctx = SK8RCanvas.getContext() ;	
+        ctx.fillStyle = "#789abc";
+        ctx.beginPath();
+        var screenCoords = SK8RCanvas.worldToScreenOrigo(this.vertices[0]);
+        ctx.moveTo(screenCoords.x, screenCoords.y);
+        for (var n=1; n<this.vertices.length; n++) {
+            screenCoords = SK8RCanvas.worldToScreenOrigo(this.vertices[n]);
+            ctx.lineTo(screenCoords.x, screenCoords.y);
+        }
+        ctx.closePath();
+        ctx.fill();
     }
