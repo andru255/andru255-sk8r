@@ -58,6 +58,13 @@ var SK8RCanvas = (function() {
         sp.y = Math.round((wp.y - cameraWorldViewport.lowerBound.y) * pixelsPerMeter) ;
         return sp ;
     }
+    
+    self.worldToScreenOrigo = function(wp) {
+        var sp = {} ;
+        sp.x = Math.round(wp.x * pixelsPerMeter) ;
+        sp.y = Math.round(wp.y * pixelsPerMeter) ;
+        return sp ;
+    }
 		
     self.worldLengthToScreen = function(length) {
         return Math.max(1, Math.round(length * pixelsPerMeter)) ;

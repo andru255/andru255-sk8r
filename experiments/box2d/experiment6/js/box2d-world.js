@@ -27,39 +27,7 @@ var SK8RGameWorld = (function() {
     var cameraFollowsDeck = false ;
 
     function initFixtures(progressMeter) {
-        var fixDef = new Box2D.Dynamics.b2FixtureDef();
-        fixDef.density = 1.0;
-        fixDef.friction = 0.9;
-        fixDef.restitution = 0.01;
-			
-        var bodyDef = new Box2D.Dynamics.b2BodyDef();
-        bodyDef.type = Box2D.Dynamics.b2Body.b2_staticBody;
-			
-        var vertices = [
-        new Box2D.Common.Math.b2Vec2(0, 11),
-        new Box2D.Common.Math.b2Vec2(14, 12),
-        new Box2D.Common.Math.b2Vec2(0, 12)
-        ] ;
-        fixDef.shape = Box2D.Collision.Shapes.b2PolygonShape.AsArray(vertices, vertices.length) ;
-        bodyDef.position.x = 0 ;
-        bodyDef.position.y = 0 ;
-        var staticBody = world.CreateBody(bodyDef); 
-        staticBody.CreateFixture(fixDef);
-        staticBody.SetUserData(new GroundRenderer(staticBody, vertices)) ;
-        if (progressMeter) {
-            progressMeter.progress(0.35) ;
-        }
-        vertices = [
-        new Box2D.Common.Math.b2Vec2(14, 12),
-        new Box2D.Common.Math.b2Vec2(16, 11),
-        new Box2D.Common.Math.b2Vec2(16, 12)
-        ] ;
-        fixDef.shape = Box2D.Collision.Shapes.b2PolygonShape.AsArray(vertices, vertices.length) ;
-        bodyDef.position.x = 0 ;
-        bodyDef.position.y = 0 ;
-        staticBody = world.CreateBody(bodyDef); 
-        staticBody.CreateFixture(fixDef);
-        staticBody.SetUserData(new GroundRenderer(staticBody, vertices)) ;
+        createDemoGround() ;
         if (progressMeter) {
             progressMeter.progress(0.4) ;
         }
@@ -67,7 +35,7 @@ var SK8RGameWorld = (function() {
 		
     function initBodies(progressMeter) {
         deck = Sk8board({
-            wheelRadius:0.1,
+            //            wheelRadius:0.1,
             offset : {
                 x:1,
                 y:10.5
@@ -75,6 +43,14 @@ var SK8RGameWorld = (function() {
         }) ;
         if (progressMeter) {
             progressMeter.progress(0.5) ;
+        }
+        createRobot({
+            offsetx : 0.9,
+            offsety : 9.1,
+            scale: 0.4
+        }) ;
+        if (progressMeter) {
+            progressMeter.progress(0.6) ;
         }
     }
 		
@@ -107,7 +83,7 @@ var SK8RGameWorld = (function() {
             world.ClearForces();
         } else {
             if (console) {
-                console.log("Loosing frame");
+                console.log("World is locked when entering step");
             }
         }
     }
@@ -174,7 +150,6 @@ var SK8RGameWorld = (function() {
         bodies = new Array();
 			
         // Setup game world
-        initFixtures() ;
         initBodies() ;
         start();
     };
@@ -184,16 +159,21 @@ var SK8RGameWorld = (function() {
     }
 		
     self.createBody = function(bodyDef, fixtureDef) {
+        var body = self.createUntrackedBody(bodyDef, fixtureDef) ;
+        bodies.push(body) ;
+        return body ;
+    };
+		
+    self.createUntrackedBody = function(bodyDef, fixtureDef) {
         var fixtureDefinitions = new Array() ;
         fixtureDefinitions = fixtureDefinitions.concat(fixtureDef) ;
         var body = world.CreateBody(bodyDef) ;
-        bodies.push(body) ;
         for (var n=0; n<fixtureDefinitions.length; n++) {
             body.CreateFixture(fixtureDefinitions[n]) ;
         }
         return body ;
     };
-		
+
     self.createJoint = function(jointDef) {
         var joint = world.CreateJoint(jointDef);
         joints.push(joint);
