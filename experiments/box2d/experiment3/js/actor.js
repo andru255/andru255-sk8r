@@ -65,6 +65,7 @@ function Wheel(ctx, body, radius) {
 Wheel.prototype.step = function(timeSinceLastFrame) {
   var worldPosition = this.body.GetPosition();
   var screenPosition = MathUtil.worldToScreen(worldPosition);
+  console.log("screenposition x" + screenPosition.x);
   this.ctx.fillStyle = "#ff0000";
   this.ctx.beginPath();
   this.ctx.arc(
@@ -91,7 +92,6 @@ Rotated.prototype.step = function(timeSinceLastFrame) {
   this.ctx.save();
   this.ctx.translate(screenPosition.x, screenPosition.y);
   this.ctx.rotate(this.body.GetAngle());
-  var self = this;
   this.delegate.render(timeSinceLastFrame);	
   this.ctx.restore();
 };
