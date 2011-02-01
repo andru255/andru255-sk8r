@@ -214,3 +214,78 @@ function createRobot(sizes) {
     new Box2D.Common.Math.b2Vec2(0*sizes.scale, -limbHalfHeight);
     SK8RGameWorld.createJoint(b2JointDef) ; 
 }
+
+function createSK8RRobot(sizes) {
+    sizes = sizes || {} ;
+    sizes.scale = sizes.scale || 1 ;
+    sizes.offsetx = sizes.offsetx || 0*sizes.scale ;
+    sizes.offsety = sizes.offsety || 0*sizes.scale ;
+    
+    //// Head
+    // Position: 1.25, 0.5
+    // Radius: 0.5
+    
+    //// Body
+    // Position 1.25, 1.75
+    // halfwidth = halfheight = 0.75
+    
+    //// Right arm
+    // Position: 0.25, 1.75
+    // Halfwidth: 0.25 Halfheight: 0.75
+    
+    //// Left arm
+    // Position: 2.25, 1.75
+    // Halfwidth: 0.25 Halfheight: 0.75
+    
+    //// Right leg
+    // Position: 0.75, 3.0
+    // Halfwidth: 0.25 Halfheight: 0.5
+    
+    //// Left leg
+    // Position: 1.75, 3
+    // Halfwidth: 0.25 Halfheight: 0.5
+
+    //// Right foot
+    // Position: 0.75, 3.75
+    // Halfwidth = Halfheight: 0.5
+    
+    //// Left foot
+    // Position: 1.75, 3.75
+    // Halfwidth = Halfheight: 0.25
+    
+    //// Right arm-body revolution joint
+    // BodyA = body
+    // BodyB = right arm
+    // BodyA-pos: -0.75, -0.75
+    // BodyB-pos: 0.25, -0.75
+    
+    //// Left arm-body revolution joint
+    // BodyA = body
+    // BodyB = left arm
+    // BodyA-pos: 0.75, -0.75
+    // BodyB-pos: -0.25, -0.75
+    
+    //// Right leg-body revolution joint
+    // BodyA = body
+    // BodyB = right leg
+    // BodyA-pos: -0.5, 0.75
+    // BodyB-pos: 0, -0.5
+    
+    //// Left leg-body revolution joint
+    // BodyA = body
+    // BodyB = left leg
+    // BodyA-pos: 0.5, 0.75
+    // BodyB-pos: 0, -0.5
+    
+    //// Right leg-Right foot prismatic joint
+    // BodyA = right leg
+    // BodyB = right foot
+    // BodyA-pos: 0, 0.5
+    // BodyB-pos: 0, -0.25
+    
+    //// Left leg-Left foot prismatic joint
+    // BodyA = left leg
+    // BodyB = left foot
+    // BodyA-pos: 0, 0.5
+    // BodyB-pos: 0, -0.25
+}
