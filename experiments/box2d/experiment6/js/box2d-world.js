@@ -44,10 +44,10 @@ var SK8RGameWorld = (function() {
         if (progressMeter) {
             progressMeter.progress(0.5) ;
         }
-        createRobot({
-            offsetx : 0.9,
-            offsety : 9.1,
-            scale: 0.4
+        createSK8RRobot({
+            offsetx : 1,
+            offsety : 7,
+            scale: 0.5
         }) ;
         if (progressMeter) {
             progressMeter.progress(0.6) ;
@@ -133,7 +133,7 @@ var SK8RGameWorld = (function() {
         SK8RCanvas.clear() ;
 			
         start() ;
-    };
+    }
 		
     self.reset = function() {
         var n ;
@@ -177,6 +177,7 @@ var SK8RGameWorld = (function() {
     self.createJoint = function(jointDef) {
         var joint = world.CreateJoint(jointDef);
         joints.push(joint);
+        return joint ;
     };			
 		
     self.addActor = function(actor) {

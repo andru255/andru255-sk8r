@@ -14,16 +14,17 @@ Copyright 2011 Johan Maasing
    limitations under the License.
  */
 
-function WheelRenderer(body, radius) {
+function WheelRenderer(body, fillStyle, radius) {
     this.body = body ;
     this.radius = radius ;
+    this.fillStyle = fillStyle ;
 }
 
     WheelRenderer.prototype.render = function() {
         var worldPosition = this.body.GetPosition() ;
         var screenPosition = SK8RCanvas.worldToScreen(worldPosition) ;
         var ctx = SK8RCanvas.getContext() ;	
-        ctx.fillStyle = "#ff0000";
+        ctx.fillStyle = this.fillStyle;
         ctx.beginPath();
         ctx.arc(
             screenPosition.x, 
@@ -130,4 +131,23 @@ BodyRenderer.prototype = SK8RDelegate(Rotated.prototype) ;
         }
         ctx.closePath();
         ctx.fill();
+    }
+
+
+function SK8RBotBoxRenderer(body, fillStyle, width, height) {
+    Rotated.call(this, body) ;
+    this.width = width ;
+    this.height = height ;
+    this.fillStyle = fillStyle;
+}
+
+SK8RBotBoxRenderer.prototype = SK8RDelegate(Rotated.prototype) ;
+    SK8RBotBoxRenderer.prototype.constructor = SK8RBotBoxRenderer;
+    SK8RBotBoxRenderer.prototype.renderRotated = function()  {
+        var widthPxls = SK8RCanvas.worldLengthToScreen(this.width) ;
+        var heightPxls = SK8RCanvas.worldLengthToScreen(this.height) ;
+        var ctx = SK8RCanvas.getContext() ;	
+        ctx.fillStyle = this.fillStyle;
+        ctx.fillRect(-widthPxls/2, -heightPxls/2,
+            widthPxls, heightPxls);
     }
