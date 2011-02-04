@@ -38,17 +38,19 @@ var SK8RGameWorld = (function() {
             //            wheelRadius:0.1,
             offset : {
                 x:1,
-                y:10.5
+                y:11
             }
         }) ;
         if (progressMeter) {
             progressMeter.progress(0.5) ;
         }
-        createSK8RRobot({
-            offsetx : 0.9,
-            offsety : 8.8,
+        var sk8rbody = createSK8RRobot({
+            offsetx : 0.92,
+            offsety : 9.3,
             scale: 0.4
         }) ;
+        var sk8rActor = new SK8RBotActor(sk8rbody) ;
+        self.addActor(sk8rActor) ;
         if (progressMeter) {
             progressMeter.progress(0.6) ;
         }
