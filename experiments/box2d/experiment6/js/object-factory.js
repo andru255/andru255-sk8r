@@ -333,7 +333,11 @@ function createSK8RRobot(sizes) {
     revolutionJointDef.upperAngle = Math.PI / 8 ;
     var headBodyJoint = SK8RGameWorld.createJoint(revolutionJointDef) ; 
     
-    
+
+    //// Arm joints
+    revolutionJointDef.maxMotorTorque = 10.0 ;
+    revolutionJointDef.motorSpeed = 0.0 ;
+    revolutionJointDef.enableMotor = true;
     //// Right arm-body revolution joint
     // BodyA = body
     // BodyB = right arm
@@ -392,6 +396,9 @@ function createSK8RRobot(sizes) {
     prismaticJointDef.localAxisA =  new Box2D.Common.Math.b2Vec2(0,1);
     prismaticJointDef.lowerTranslation = -feetHalfHeight * 2 * sizes.scale ;
     prismaticJointDef.upperTranslation = feetHalfHeight * 2 * sizes.scale ;
+    prismaticJointDef.maxMotorForce = 10.0 ;
+    prismaticJointDef.motorSpeed = 0.0 ;
+    prismaticJointDef.enableMotor = true;
 
     //// Right leg-Right foot prismatic joint
     // BodyA = right leg
