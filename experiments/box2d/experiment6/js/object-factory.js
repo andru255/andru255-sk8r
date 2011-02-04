@@ -39,14 +39,14 @@ function Sk8board(sizes) {
     bodyDef.position.x = sizes.wheelRadius + offset.x;
     bodyDef.position.y = sizes.wheelRadius + offset.y;
     var backwheel = SK8RGameWorld.createBody(bodyDef,fixDef);
-    backwheel.SetUserData(new WheelRenderer(backwheel, sizes.wheelRadius)) ;
+    backwheel.SetUserData(new WheelRenderer(backwheel, "#a00000", sizes.wheelRadius)) ;
 
     // Front wheel
     bodyDef.type = Box2D.Dynamics.b2Body.b2_dynamicBody;
     bodyDef.position.x = sizes.boardLength-sizes.wheelRadius + offset.x;
     bodyDef.position.y = sizes.wheelRadius + offset.y;
     var frontwheel = SK8RGameWorld.createBody(bodyDef,fixDef);
-    frontwheel.SetUserData(new WheelRenderer(frontwheel, sizes.wheelRadius));
+    frontwheel.SetUserData(new WheelRenderer(frontwheel, "#00a000", sizes.wheelRadius));
 	
     // Deck
     fixDef.shape = new Box2D.Collision.Shapes.b2PolygonShape();
@@ -295,28 +295,30 @@ function createSK8RRobot(sizes) {
     leftLeg.SetUserData(new SK8RBotBoxRenderer(leftLeg, "#c0b0a0", legHalfWidth * 2, legHalfHeight * 2)) ;
 
     //// Feet
-    var feetHalfSize = 0.25 * sizes.scale ;
+    var feetHalfWidth = 0.25 * sizes.scale ;
+    var feetHalfHeight = 0.5 * sizes.scale ;
     
     //// Right foot
     // Position: 0.75, 3.75
     // Halfwidth = Halfheight: 0.5
     bodyDef.position.x = sizes.offsetx + (0.75 * sizes.scale);
     bodyDef.position.y = sizes.offsety + (3.75 * sizes.scale);
-    fixDef.shape.SetAsBox(feetHalfSize, feetHalfSize);
+    fixDef.shape.SetAsBox(feetHalfWidth, feetHalfHeight);
     var rightFoot = SK8RGameWorld.createBody(bodyDef, fixDef) ; 
-    rightFoot.SetUserData(new SK8RBotBoxRenderer(rightFoot, "#102030", feetHalfSize * 2, feetHalfSize * 2)) ;
+    rightFoot.SetUserData(new SK8RBotBoxRenderer(rightFoot, "#102030", feetHalfWidth * 2, feetHalfHeight * 2)) ;
     
     //// Left foot
     // Position: 1.75, 3.75
     // Halfwidth = Halfheight: 0.25
     bodyDef.position.x = sizes.offsetx + (1.75 * sizes.scale);
     bodyDef.position.y = sizes.offsety + (3.75 * sizes.scale);
-    fixDef.shape.SetAsBox(feetHalfSize, feetHalfSize);
+    fixDef.shape.SetAsBox(feetHalfWidth, feetHalfHeight);
     var leftFoot = SK8RGameWorld.createBody(bodyDef, fixDef) ; 
-    leftFoot.SetUserData(new SK8RBotBoxRenderer(leftFoot, "#302010", feetHalfSize * 2, feetHalfSize * 2)) ;
+    leftFoot.SetUserData(new SK8RBotBoxRenderer(leftFoot, "#302010", feetHalfWidth * 2, feetHalfHeight * 2)) ;
 
     //// Joints
     var revolutionJointDef = new Box2D.Dynamics.Joints.b2RevoluteJointDef();
+    revolutionJointDef.enableLimit = true ;
     
     //// Head body revolution joint
     // BodyA = body
@@ -329,7 +331,6 @@ function createSK8RRobot(sizes) {
     revolutionJointDef.localAnchorB =  new Box2D.Common.Math.b2Vec2(0, 0.5 * sizes.scale);
     revolutionJointDef.lowerAngle = -(Math.PI / 8) ; // 180/8 = 22.5 degrees
     revolutionJointDef.upperAngle = Math.PI / 8 ;
-    revolutionJointDef.enableLimit = true ;
     var headBodyJoint = SK8RGameWorld.createJoint(revolutionJointDef) ; 
     
     
@@ -344,7 +345,6 @@ function createSK8RRobot(sizes) {
     revolutionJointDef.localAnchorB =  new Box2D.Common.Math.b2Vec2(0.25 * sizes.scale, -0.75 * sizes.scale);
     revolutionJointDef.lowerAngle = -(Math.PI / 8) ; // 180/8 = 22.5 degrees
     revolutionJointDef.upperAngle = Math.PI ;
-    revolutionJointDef.enableLimit = true ;
     var rArmBodyBodyJoint = SK8RGameWorld.createJoint(revolutionJointDef) ; 
     
     //// Left arm-body revolution joint
@@ -358,7 +358,6 @@ function createSK8RRobot(sizes) {
     revolutionJointDef.localAnchorB =  new Box2D.Common.Math.b2Vec2(-0.25 * sizes.scale, -0.75 * sizes.scale);
     revolutionJointDef.lowerAngle = -Math.PI;
     revolutionJointDef.upperAngle = Math.PI / 8 ; // 180/8 = 22.5 degrees
-    revolutionJointDef.enableLimit = true ;
     var lArmBodyBodyJoint = SK8RGameWorld.createJoint(revolutionJointDef) ; 
     
     //// Right leg-body revolution joint
@@ -372,7 +371,6 @@ function createSK8RRobot(sizes) {
     revolutionJointDef.localAnchorB =  new Box2D.Common.Math.b2Vec2(0, -0.5 * sizes.scale);
     revolutionJointDef.lowerAngle = -Math.PI / 8 ; // 180/8 = 22.5 degrees
     revolutionJointDef.upperAngle = Math.PI / 8 ; // 180/8 = 22.5 degrees
-    revolutionJointDef.enableLimit = true ;
     var rLegBodyBodyJoint = SK8RGameWorld.createJoint(revolutionJointDef) ; 
     
     //// Left leg-body revolution joint
@@ -386,34 +384,53 @@ function createSK8RRobot(sizes) {
     revolutionJointDef.localAnchorB =  new Box2D.Common.Math.b2Vec2(0, -0.5 * sizes.scale);
     revolutionJointDef.lowerAngle = -Math.PI / 8 ; // 180/8 = 22.5 degrees
     revolutionJointDef.upperAngle = Math.PI / 8 ; // 180/8 = 22.5 degrees
-    revolutionJointDef.enableLimit = true ;
     var lLegBodyBodyJoint = SK8RGameWorld.createJoint(revolutionJointDef) ; 
-    
+
+    //// Feet joints
+    var prismaticJointDef = new Box2D.Dynamics.Joints.b2PrismaticJointDef();
+    prismaticJointDef.enableLimit = true ;
+    prismaticJointDef.localAxisA =  new Box2D.Common.Math.b2Vec2(0,1);
+    prismaticJointDef.lowerTranslation = -feetHalfHeight * 2 * sizes.scale ;
+    prismaticJointDef.upperTranslation = feetHalfHeight * 2 * sizes.scale ;
+
     //// Right leg-Right foot prismatic joint
     // BodyA = right leg
     // BodyB = right foot
     // BodyA-pos: 0, 0.5
     // BodyB-pos: 0, -0.25
+    prismaticJointDef.bodyA = rightLeg;
+    prismaticJointDef.bodyB = rightFoot;
+    prismaticJointDef.localAnchorA = new Box2D.Common.Math.b2Vec2(0, 0.5 * sizes.scale);
+    prismaticJointDef.localAnchorB = new Box2D.Common.Math.b2Vec2(0, -feetHalfHeight * sizes.scale);
+    var lFootJoint = SK8RGameWorld.createJoint(prismaticJointDef) ;
+
     
     //// Left leg-Left foot prismatic joint
     // BodyA = left leg
     // BodyB = left foot
     // BodyA-pos: 0, 0.5
     // BodyB-pos: 0, -0.25
-//
-//    return {
-//        body : body,
-//        head : head,
-//        headBodyJoint : headBodyJoint,
-//        rightArm : rightArm,
-//        rightArmBodyJoint: rArmBodyBodyJoint,
-//        leftArm : leftArm,
-//        leftArmBodyJoint: lArmBodyBodyJoint,
-//        rightLeg : rightLeg,
-//        rightLegBodyJoint : rLegBodyBodyJoint,
-//        leftLeg : leftLeg,
-//        leftLegBodyJoint : lLegBodyBodyJoint,
-//        rightFoot : rightFoot,
-//        leftFoot : leftFoot
-//    } ;
+    prismaticJointDef.bodyA = leftLeg;
+    prismaticJointDef.bodyB = leftFoot;
+    prismaticJointDef.localAnchorA = new Box2D.Common.Math.b2Vec2(0, 0.5 * sizes.scale);
+    prismaticJointDef.localAnchorB = new Box2D.Common.Math.b2Vec2(0, -feetHalfHeight * sizes.scale);
+    var rFootJoint = SK8RGameWorld.createJoint(prismaticJointDef) ;
+
+    return {
+        body : body,
+        head : head,
+        headBodyJoint : headBodyJoint,
+        rightArm : rightArm,
+        rightArmBodyJoint: rArmBodyBodyJoint,
+        leftArm : leftArm,
+        leftArmBodyJoint: lArmBodyBodyJoint,
+        rightLeg : rightLeg,
+        rightLegBodyJoint : rLegBodyBodyJoint,
+        leftLeg : leftLeg,
+        leftLegBodyJoint : lLegBodyBodyJoint,
+        rightFoot : rightFoot,
+        rightFootJoint : rFootJoint,
+        leftFoot : leftFoot,
+        leftFootJoint : lFootJoint
+    } ;
 }
