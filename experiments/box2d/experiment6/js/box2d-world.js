@@ -22,9 +22,10 @@ var SK8RGameWorld = (function() {
     var actors ;
     var timerID ;
     var lastFrameTime ;
-    var renderCallback = SK8RBindApply(self, render) ;
+    var renderCallback = SK8RBindApply(self, renderFixtures) ;
     var deck ;
     var cameraFollowsDeck = false ;
+    var renderers = new Array() ;
 
     function initFixtures(progressMeter) {
         createDemoGround() ;
@@ -45,12 +46,14 @@ var SK8RGameWorld = (function() {
             progressMeter.progress(0.5) ;
         }
         var sk8rbody = createSK8RRobot({
-            offsetx : 0.92,
-            offsety : 9.3,
+            offsetx : 1.1,
+            offsety : 8.3,
             scale: 0.4
         }) ;
         var sk8rActor = new SK8RBotActor(sk8rbody) ;
         self.addActor(sk8rActor) ;
+        window.onkeydown = SK8RBindApply(sk8rActor, sk8rActor.onkeydown) ;
+        
         if (progressMeter) {
             progressMeter.progress(0.6) ;
         }
@@ -74,13 +77,20 @@ var SK8RGameWorld = (function() {
                 SK8RCanvas.panTo(wp.x, wp.y);
             }
 
-            // Call renderers
+            // Renderers
             if (debugDraw) {
                 world.DrawDebugData();
             } else {
                 SK8RCanvas.clear();
                 var viewportAABB = SK8RCanvas.getViewportAABB() ;
                 world.QueryAABB(renderCallback, viewportAABB) ;
+                for (var n=0; n<renderers.length; n++) {
+                    var renderer = renderers[n].pop() ;
+                    while (renderer) {
+                        renderer.render() ;
+                        renderer = renderers[n].pop() ;
+                    }
+                }
             }
             world.ClearForces();
         } else {
@@ -90,11 +100,11 @@ var SK8RGameWorld = (function() {
         }
     }
     
-    function render(b2Fixture) {
+    function renderFixtures(b2Fixture) {
         // TODO: bodies with several fixtures will be rendered several times using this. Might be ok
         var userdata = b2Fixture.GetBody().GetUserData() ;
-        if (userdata && userdata.render) {
-            userdata.render() ;
+        if (userdata) {
+            self.queueRenderer(userdata) ;
         }
         return true ;
     }
@@ -103,6 +113,10 @@ var SK8RGameWorld = (function() {
         lastFrameTime = new Date().getTime() ;
         var callback = SK8RBindCall(self, step) ;
         timerID = window.setInterval(callback, 1000 / 30);
+    }
+    
+    self.queueRenderer = function(renderer) {
+        renderers[renderer.getZIndex()].push(renderer) ;
     }
 		
     self.onLoad = function() {
@@ -130,7 +144,11 @@ var SK8RGameWorld = (function() {
         // Setup game world
         initFixtures(progressMeter) ;
         initBodies(progressMeter) ;
-			
+        
+        progressMeter.progress(0.7) ;
+        for (var n=0; n<10; n++) {
+            renderers[n] = new Array() ;
+        }
         progressMeter.progress(1.0) ;
         SK8RCanvas.clear() ;
 			
@@ -138,6 +156,7 @@ var SK8RGameWorld = (function() {
     }
 		
     self.reset = function() {
+        SK8RCanvas.clear() ;
         var n ;
         window.clearInterval(timerID) ;
         // Destroy the existing joints
@@ -150,7 +169,7 @@ var SK8RGameWorld = (function() {
             world.DestroyBody(bodies[n]);
         }
         bodies = new Array();
-			
+        actors = new Array() ;
         // Setup game world
         initBodies() ;
         start();

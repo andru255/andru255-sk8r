@@ -38,14 +38,28 @@ var SK8RCanvas = (function() {
     } ;
     var cameraZoom = 1 ;
     var ctx ;
-		
+    var canvas ;
+
     self.onLoad = function() {
-        var canvas = document.getElementById('canvas');
+        canvas = document.getElementById('canvas');
+        width = canvas.getAttribute("width") ;
+        height = canvas.getAttribute("height") ;
         ctx = canvas.getContext('2d');
     };
-		
+
     self.getContext = function() {
         return ctx ;
+    };
+    
+    self.getCanvas = function() {
+        return canvas ;
+    };
+    
+    self.getCanvasSize = function() {
+        return {
+            width : width, 
+            height : height
+        } ;
     };
 		
     self.clear = function() {

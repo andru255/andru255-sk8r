@@ -22,6 +22,10 @@
             width: 640px;
             height: 480px;
         }
+        nav {
+            background-color: white ;
+            color : white;
+        }
         </style>
 
         <script type="text/javascript" src="../lib/Box2dWeb-2.1a.2.js"></script>
@@ -35,19 +39,22 @@
     </head>
     <body>
         <h1>Box2DWeb</h1>
-        <nav>
-            <a href="js/box2d-world.js">box2d-world.js</a>
-            <a href="js/renderers.js">renderers.js</a>
-            <a href="js/canvas.js">canvas.js</a>
-            <a href="js/lang.js">lang.js</a>
-            <a href="js/object-factory.js">object-factory.js</a>
-        </nav>
         <p>
             Using the
             <a href="http://code.google.com/p/box2dweb/">JavaScript port</a>
             of the flash port of the
             <a href="http://box2d.org/">Box2D library</a>
-            .</p>
+        <p>
+            Lean with left-right arrow. Reset by Enter.
+        <nav>
+            <a href="js/lang.js">lang.js</a>
+            <a href="js/progress.js">progress.js</a>
+            <a href="js/canvas.js">canvas.js</a>
+            <a href="js/renderers.js">renderers.js</a>
+            <a href="js/actors.js">actors.js</a>
+            <a href="js/object-factory.js">object-factory.js</a>
+            <a href="js/box2d-world.js">box2d-world.js</a>
+        </nav>
         <div class="box2d-canvas-container size640x480">
             <canvas id="canvas" width="640" height="480"></canvas>
         </div>

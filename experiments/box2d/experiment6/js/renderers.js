@@ -14,13 +14,27 @@ Copyright 2011 Johan Maasing
    limitations under the License.
  */
 
-function WheelRenderer(body, fillStyle, radius) {
+var ZIndices = {
+    Space : 0,
+    FarBackground : 1,
+    Background : 2,
+    Ground : 3,
+    Far : 4,
+    Normal : 5,
+    Near : 6,
+    FarOverlay : 7,
+    Overlay : 8,
+    NearOverlay : 9
+}
+
+function FilledCircleRenderer(body, zindex, fillStyle, radius) {
     this.body = body ;
     this.radius = radius ;
     this.fillStyle = fillStyle ;
+    this.zindex = zindex || ZIndices.Normal ;
 }
 
-    WheelRenderer.prototype.render = function() {
+    FilledCircleRenderer.prototype.render = function() {
         var worldPosition = this.body.GetPosition() ;
         var screenPosition = SK8RCanvas.worldToScreen(worldPosition) ;
         var ctx = SK8RCanvas.getContext() ;	
@@ -35,6 +49,9 @@ function WheelRenderer(body, fillStyle, radius) {
             false);
         ctx.closePath();
         ctx.fill();
+    }
+    FilledCircleRenderer.prototype.getZIndex = function() {
+        return this.zindex ;
     }
 
 
@@ -56,9 +73,13 @@ function GroundRenderer(body, vertices) {
         ctx.closePath();
         ctx.fill();
     }
+    GroundRenderer.prototype.getZIndex = function() {
+        return ZIndices.Ground ;
+    }
 
-function Rotated(body) {
+function Rotated(body, zindex) {
     this.body = body ;
+    this.zindex = zindex ;
 }
 
     Rotated.prototype.render = function() {
@@ -76,9 +97,12 @@ function Rotated(body) {
             console.log("Forgot to override renderRotated") ;
         }
     }
-
+    Rotated.prototype.getZIndex = function() {
+        return this.zindex ;
+    }
+    
 function DeckRenderer(body, length, thickness) {
-    Rotated.call(this, body) ;
+    Rotated.call(this, body, ZIndices.Normal) ;
     this.length = length ;
     this.thickness = thickness ;
 }
@@ -95,7 +119,7 @@ DeckRenderer.prototype = SK8RDelegate(Rotated.prototype) ;
     }
 
 function ArmRenderer(body, width, height) {
-    Rotated.call(this, body) ;
+    Rotated.call(this, body, ZIndices.Near) ;
     this.width = width ;
     this.height = height ;
 }
@@ -113,7 +137,7 @@ ArmRenderer.prototype = SK8RDelegate(Rotated.prototype) ;
 
 
 function BodyRenderer(body, vertices) {
-    Rotated.call(this, body) ;
+    Rotated.call(this, body, ZIndices.Normal) ;
     this.vertices = vertices ;
 }
 
@@ -134,8 +158,8 @@ BodyRenderer.prototype = SK8RDelegate(Rotated.prototype) ;
     }
 
 
-function SK8RBotBoxRenderer(body, fillStyle, width, height) {
-    Rotated.call(this, body) ;
+function SK8RBotBoxRenderer(body, zindex, fillStyle, width, height) {
+    Rotated.call(this, body, zindex) ;
     this.width = width ;
     this.height = height ;
     this.fillStyle = fillStyle;
@@ -150,4 +174,31 @@ SK8RBotBoxRenderer.prototype = SK8RDelegate(Rotated.prototype) ;
         ctx.fillStyle = this.fillStyle;
         ctx.fillRect(-widthPxls/2, -heightPxls/2,
             widthPxls, heightPxls);
+    }
+
+function SK8RBotActorStateRenderer(actor) {
+    this.actor = actor ;
+}
+    SK8RBotActorStateRenderer.prototype.render = function() {
+        var canvasSize = SK8RCanvas.getCanvasSize() ;
+        var ctx = SK8RCanvas.getContext() ;
+        var text = "Left Desired [Arm Angle: " + 
+            (this.actor.leftArmDesiredAngle * (180/Math.PI)).toFixed(1) + 
+            " foot translation: " + 
+            this.actor.leftFootDesiredTranslation.toFixed(1) + 
+            "]";
+        ctx.textBaseline="top";
+        ctx.font = "14px sans" ;
+        var metrics = ctx.measureText(text) ;
+        var textx = canvasSize.width/2 - metrics.width/2 ;
+        ctx.clearRect(20, 0, canvasSize.width-40, 24);
+        ctx.fillStyle="rgba(128, 128, 128, 0.5)" ;
+        ctx.fillRect(20, 0, canvasSize.width-40, 24);
+        ctx.fillStyle="rgba(255, 255, 255, 0.8)" ;
+        ctx.fillText(text, textx, 1, canvasSize.width) ;
+
+    }
+    
+    SK8RBotActorStateRenderer.prototype.getZIndex = function() {
+        return ZIndices.Overlay ;
     }

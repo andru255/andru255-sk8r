@@ -28,6 +28,7 @@ function SK8RBotActor(box2dentities) {
     this.leftArmDesiredAngle = this.neutralArmAngle ;
     this.leftFootDesiredTranslation = this.neutralFootDistance ;
     this.rightFootDesiredTranslation = this.neutralFootDistance ;
+    this.renderer = new SK8RBotActorStateRenderer(this);
 }
 
     SK8RBotActor.prototype.step = function(timeSinceLastStep) {
@@ -40,9 +41,37 @@ function SK8RBotActor(box2dentities) {
         
         var lfj = this.box2dentities.leftFootJoint ;
         var lfjTranslationError = lfj.GetJointTranslation() - this.leftFootDesiredTranslation ;
-        lfj.SetMotorSpeed(-0.1 * lfjTranslationError) ;
+        lfj.SetMotorSpeed(-1 * lfjTranslationError) ;
         var rfj = this.box2dentities.rightFootJoint ;
         var rfjTranslationError = rfj.GetJointTranslation() - this.rightFootDesiredTranslation ;
-        rfj.SetMotorSpeed(-0.1 * rfjTranslationError) ;
+        rfj.SetMotorSpeed(-1 * rfjTranslationError) ;
+        SK8RGameWorld.queueRenderer(this.renderer) ;
+    }
+    
         
+    SK8RBotActor.prototype.onkeydown = function(event) {
+        if (event) {
+            switch (event.keyIdentifier) {
+                case "Right" :
+                    this.leftFootDesiredTranslation += 0.1 ;
+                    this.rightFootDesiredTranslation -= 0.1 ;
+                    this.rightArmDesiredAngle -= 0.1 ;
+                    this.leftArmDesiredAngle += 0.1 ;
+                    break ;
+                case "Left" :
+                    this.leftFootDesiredTranslation -= 0.1 ;
+                    this.rightFootDesiredTranslation += 0.1 ;
+                    this.rightArmDesiredAngle += 0.1 ;
+                    this.leftArmDesiredAngle -= 0.1 ;
+                    break ;
+                case "Down" :
+                case "Up" :
+                    console.log(event.keyIdentifier);
+                    break ;
+                case "Enter" :
+                    SK8RGameWorld.reset() ;
+                    break ;
+            }
+        }
+        return true ;
     }
