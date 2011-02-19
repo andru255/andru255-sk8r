@@ -17,12 +17,12 @@ var SK8RCanvas = (function() {
     var self = {} ;
     var width = 640 ;
     var height = 480 ;
-    var pixelsPerMeter = 40 ;
+    var pixelsPerMeter = 20 ;
     var cameraDefaultWorldViewportValues = {
-        halfWidth : 8,
-        helfHeight : 6,
-        xoffset : 8,
-        yoffset : 6
+        halfWidth : 16,
+        helfHeight : 12,
+        xoffset : 16,
+        yoffset : 12
     };
     var cameraDefaultWorldViewport = {
         lowerBound : new Box2D.Common.Math.b2Vec2(

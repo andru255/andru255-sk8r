@@ -16,11 +16,12 @@ Copyright 2011 Johan Maasing
 
 function Sk8board(sizes) {
     sizes = sizes || {} ;
+    sizes.scale = sizes.scale || 1 ;
     // According to http://defekt.se/2010/04/den-standardiserade-skateboarden/
-    sizes.wheelRadius = sizes.wheelRadius || 0.05 ;
-    sizes.boardThickness = sizes.boardThickness || 0.02 ;
-    sizes.boardLength = sizes.boardLength || 0.82 ;
-    sizes.truckOffset = sizes.truckOffset || 0.18 ;
+    sizes.wheelRadius = (sizes.wheelRadius || 0.05) * sizes.scale ;
+    sizes.boardThickness = (sizes.boardThickness || 0.02) * sizes.scale ;
+    sizes.boardLength = (sizes.boardLength || 0.82) * sizes.scale ;
+    sizes.truckOffset = (sizes.truckOffset || 0.18) * sizes.scale ;
     
     var offset = sizes.offset || {} ;
     offset.x = offset.x || 0 ;

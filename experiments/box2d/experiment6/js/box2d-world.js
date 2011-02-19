@@ -36,19 +36,19 @@ var SK8RGameWorld = (function() {
 		
     function initBodies(progressMeter) {
         deck = new Sk8board({
-            //            wheelRadius:0.1,
+            scale : 2,
             offset : {
-                x:1,
-                y:11
+                x:1.2,
+                y:9.8
             }
         }) ;
         if (progressMeter) {
             progressMeter.progress(0.5) ;
         }
         var sk8rbody = createSK8RRobot({
-            offsetx : 1.1,
-            offsety : 8.3,
-            scale: 0.4
+            offsetx : 1,
+            offsety : 6.5,
+            scale: 0.8
         }) ;
         var sk8rActor = new SK8RBotActor(sk8rbody) ;
         self.addActor(sk8rActor) ;
