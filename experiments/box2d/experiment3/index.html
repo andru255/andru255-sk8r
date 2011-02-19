@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Box2DWeb</title>
+    <style type="text/css" media="screen">
+      canvas {
+        border: 1px solid black;
+        cursor: crosshair;
+      }
+    </style>
+    <script type="text/javascript" src="../lib/Box2dWeb-2.1a.2.js"></script>
+    <!--<script type="text/javascript" src="js/actor.js"></script>
+    <script type="text/javascript" src="js/pencil.js"></script>
+    <script type="text/javascript" src="js/experiment3.js"></script>-->
+    <script type="text/javascript" src="js/world.js"></script>
+  </head>
+  <body>
+    <h1>Box2DWeb</h1>
+    Using the
+    <a href="http://code.google.com/p/box2dweb/">JavaScript port</a>
+    of the flash port of the
+    <a href="http://box2d.org/">Box2D library</a>
+    .
+    <div class="box2d-canvas-container size640x480">
+      <canvas id="canvas" width="640" height="480"></canvas>
+    </div>
+    <button onclick="play();">Play</button>
+    <label for="debug">Debug?</label>
+    <input type="checkbox" id="debug" checked />
+    <fieldset id="name">
+      <legend>Ollie params</legend>
+      <label for="x">x</label>
+      <input type="text" id="x" value="0.0" />
+      <label for="y">y</label>
+      <input type="text" id="y" value="0.01" />
+      <button onclick="ollie();">Ollie</button>
+    </fieldset>
+  </body>
+</html>
