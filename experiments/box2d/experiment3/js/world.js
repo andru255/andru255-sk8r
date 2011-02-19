@@ -1,8 +1,10 @@
 (function() {
-  var Line, SkateBoard, World, b2Body, b2BodyDef, b2CircleShape, b2DebugDraw, b2DynamicBody, b2Fixture, b2FixtureDef, b2MassData, b2PolygonShape, b2RevoluteJointDef, b2StaticBody, b2Vec2, b2World, createFixture, screenToWorld, worldPositionToScreenPosition, worldToScreen;
+  var SkateBoard, World, b2Body, b2BodyDef, b2CircleShape, b2DebugDraw, b2DynamicBody, b2Fixture, b2FixtureDef, b2MassData, b2PolygonShape, b2RevoluteJointDef, b2StaticBody, b2Vec2, b2World, createFixture, screenToWorld, worldPositionToScreenPosition, worldToScreen;
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
   window.onload = function() {
-    var b2dWorld, canvas, line, skateboard, world;
+    var Line, b2dWorld, canvas, line, skateboard, world;
+    Line = window.Line;
+    console.log(Line);
     canvas = document.getElementById("canvas");
     b2dWorld = new b2World(new b2Vec2(0, 10), true);
     world = new World(b2dWorld, canvas);
@@ -20,7 +22,7 @@
       return line.setStart(e);
     }, this);
     canvas.onmouseup = __bind(function(e) {
-      if (line) {
+      if (line != null) {
         line.setEnd(e);
         line.render();
         line.create();
@@ -29,7 +31,7 @@
       }
     }, this);
     canvas.onmousemove = __bind(function(e) {
-      if (line) {
+      if (line != null) {
         canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
         line.setEnd(e);
         return line.render();
@@ -221,75 +223,5 @@
       return this.board.ApplyImpulse(new b2Vec2(x, y), localCenter);
     };
     return SkateBoard;
-  })();
-  Line = (function() {
-    function Line(world, canvas) {
-      this.world = world;
-      this.canvas = canvas;
-      this.start = {};
-      this.end = {};
-      this.canvasPosition = this.getElementPosition(canvas);
-      this.ctx = this.canvas.getContext("2d");
-      this.ctx.strokeStyle = "rgb(0,0,0)";
-      this.mouseIsDown;
-    }
-    Line.prototype.setStart = function(e) {
-      this.start.x = e.clientX - this.canvasPosition.x;
-      return this.start.y = e.clientY - this.canvasPosition.y;
-    };
-    Line.prototype.setEnd = function(e) {
-      this.end.x = e.clientX - this.canvasPosition.x;
-      return this.end.y = e.clientY - this.canvasPosition.y;
-    };
-    Line.prototype.step = function() {
-      return this.render();
-    };
-    Line.prototype.render = function() {
-      this.ctx.beginPath();
-      this.ctx.moveTo(this.start.x, this.start.y);
-      this.ctx.lineTo(this.end.x, this.end.y);
-      this.ctx.stroke();
-      return this.ctx.closePath();
-    };
-    Line.prototype.create = function() {
-      var bodyDef, end, fixDef, start, vertices;
-      if (!(this.start && this.end)) {
-        return;
-      }
-      start = screenToWorld(this.start);
-      end = screenToWorld(this.end);
-      bodyDef = new b2BodyDef();
-      bodyDef.position.Set(0.0, 0.0);
-      fixDef = createFixture(1.0, 0.5, 0.2);
-      fixDef.shape = new b2PolygonShape();
-      vertices = [new Box2D.Common.Math.b2Vec2(start.x, start.y), new Box2D.Common.Math.b2Vec2(end.x, end.y), new Box2D.Common.Math.b2Vec2(end.x, end.y + 0.01), new Box2D.Common.Math.b2Vec2(start.x, start.y + 0.01)];
-      fixDef.shape.SetAsArray(vertices, vertices.length);
-      return this.world.CreateBody(bodyDef).CreateFixture(fixDef);
-    };
-    Line.prototype.getElementPosition = function(element) {
-      var elem, tagname, x, y;
-      elem = element;
-      tagname = "";
-      x = 0;
-      y = 0;
-      while ((typeof elem === "object") && (typeof elem.tagName !== "undefined")) {
-        y += elem.offsetTop;
-        x += elem.offsetLeft;
-        tagname = elem.tagName.toUpperCase();
-        if (tagname === "BODY") {
-          elem = 0;
-        }
-        if (typeof elem === "object") {
-          if (typeof elem.offsetParent === "object") {
-            elem = elem.offsetParent;
-          }
-        }
-      }
-      return {
-        x: x,
-        y: y
-      };
-    };
-    return Line;
   })();
 }).call(this);
